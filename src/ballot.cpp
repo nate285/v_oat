@@ -3,14 +3,16 @@ using namespace std;
 
 ballot::ballot(int max, helib::Ctxt dummy) : max_votes{max}, b{dummy} {}
 
-void ballot::showCandidateInfo() {
+void ballot::showCandidateInfo()
+{
     cout << "Here are the registered candidates: " << endl;
-    for (int i{0}; i < candidates.size(); ++i) 
+    for (int i{0}; i < candidates.size(); ++i)
         cout << i + 1 << ". " << candidates[i] << "\n";
     cout << endl;
 }
 
-void ballot::initBallot(helib::Context* context, helib::PubKey* public_key) {
+void ballot::initBallot(helib::Context *context, helib::PubKey *public_key)
+{
     helib::Ptxt<helib::BGV> p_b(*context);
 
     helib::Ctxt enc_b(*public_key);
@@ -18,8 +20,10 @@ void ballot::initBallot(helib::Context* context, helib::PubKey* public_key) {
     b = enc_b;
 }
 
-int ballot::registerCandidate(string name) {
-    if (closed) {
+int ballot::registerCandidate(string name)
+{
+    if (closed)
+    {
         cerr << "ballot closed not accepting any more registers" << endl;
         return -1;
     }
@@ -27,12 +31,15 @@ int ballot::registerCandidate(string name) {
     return 0;
 }
 
-int ballot::registerVoter(vote* v) {
-    if (reg_votes.count(v->getId())) {
+int ballot::registerVoter(vote *v)
+{
+    if (reg_votes.count(v->getId()))
+    {
         cerr << "vote already registered" << endl;
         return -1;
     }
-    if (reg_voters.count(v->getVoter())) {
+    if (reg_voters.count(v->getVoter()))
+    {
         cerr << "voter already registered" << endl;
         return -1;
     }
@@ -41,16 +48,20 @@ int ballot::registerVoter(vote* v) {
     return 0;
 }
 
-int ballot::cast(vote* v) {
-    if (!v->voted()) {
+int ballot::cast(vote *v)
+{
+    if (!v->voted())
+    {
         cerr << "vote not yet casted" << endl;
         return -1;
     }
-    if (!reg_votes.count(v->getId())) {
+    if (!reg_votes.count(v->getId()))
+    {
         cerr << "vote not registered" << endl;
         return -1;
     }
-    if (!reg_voters.count(v->getVoter())) {
+    if (!reg_voters.count(v->getVoter()))
+    {
         cerr << "voter not registered" << endl;
         return -1;
     }
@@ -61,22 +72,27 @@ int ballot::cast(vote* v) {
     b += v->getVote();
 }
 
-helib::Ctxt ballot::showResult() {
-    if (!ready) {
+helib::Ctxt ballot::showResult()
+{
+    if (!ready)
+    {
         cerr << "ballot not ready" << endl;
         return b;
     }
     return b;
 }
 
-void ballot::close() {
+void ballot::close()
+{
     closed = true;
 }
 
-void ballot::done() {
+void ballot::done()
+{
     ready = true;
 }
 
-string ballot::getCandidate(int pos) {
+string ballot::getCandidate(int pos)
+{
     return candidates[pos];
 }

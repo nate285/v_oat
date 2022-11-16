@@ -54,10 +54,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hanseun/v_oat
+CMAKE_SOURCE_DIR = /home/nate/senior_design/v_oat
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hanseun/v_oat/build
+CMAKE_BINARY_DIR = /home/nate/senior_design/v_oat/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -81,14 +81,14 @@ clean: CMakeFiles/simulate.dir/clean
 CMakeFiles/simulate.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulate.dir/build.make CMakeFiles/simulate.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulate.dir/build.make CMakeFiles/simulate.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/hanseun/v_oat/build/CMakeFiles --progress-num=1,2,3,4,5 "Built target simulate"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=1,2,3,4,5 "Built target simulate"
 .PHONY : CMakeFiles/simulate.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/simulate.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/hanseun/v_oat/build/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nate/senior_design/v_oat/build/CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/simulate.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/hanseun/v_oat/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nate/senior_design/v_oat/build/CMakeFiles 0
 .PHONY : CMakeFiles/simulate.dir/rule
 
 # Convenience name for target.
