@@ -53,10 +53,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hanseun/v_oat
+CMAKE_SOURCE_DIR = /home/nate/senior_design/v_oat
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hanseun/v_oat/build
+CMAKE_BINARY_DIR = /home/nate/senior_design/v_oat/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/simulate.dir/depend.make
@@ -70,60 +70,60 @@ include CMakeFiles/simulate.dir/progress.make
 include CMakeFiles/simulate.dir/flags.make
 
 CMakeFiles/simulate.dir/src/ballot.cpp.o: CMakeFiles/simulate.dir/flags.make
-CMakeFiles/simulate.dir/src/ballot.cpp.o: /home/hanseun/v_oat/src/ballot.cpp
+CMakeFiles/simulate.dir/src/ballot.cpp.o: /home/nate/senior_design/v_oat/src/ballot.cpp
 CMakeFiles/simulate.dir/src/ballot.cpp.o: CMakeFiles/simulate.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/simulate.dir/src/ballot.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/ballot.cpp.o -MF CMakeFiles/simulate.dir/src/ballot.cpp.o.d -o CMakeFiles/simulate.dir/src/ballot.cpp.o -c /home/hanseun/v_oat/src/ballot.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/simulate.dir/src/ballot.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/ballot.cpp.o -MF CMakeFiles/simulate.dir/src/ballot.cpp.o.d -o CMakeFiles/simulate.dir/src/ballot.cpp.o -c /home/nate/senior_design/v_oat/src/ballot.cpp
 
 CMakeFiles/simulate.dir/src/ballot.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/simulate.dir/src/ballot.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/v_oat/src/ballot.cpp > CMakeFiles/simulate.dir/src/ballot.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nate/senior_design/v_oat/src/ballot.cpp > CMakeFiles/simulate.dir/src/ballot.cpp.i
 
 CMakeFiles/simulate.dir/src/ballot.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simulate.dir/src/ballot.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/v_oat/src/ballot.cpp -o CMakeFiles/simulate.dir/src/ballot.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nate/senior_design/v_oat/src/ballot.cpp -o CMakeFiles/simulate.dir/src/ballot.cpp.s
 
 CMakeFiles/simulate.dir/src/vote.cpp.o: CMakeFiles/simulate.dir/flags.make
-CMakeFiles/simulate.dir/src/vote.cpp.o: /home/hanseun/v_oat/src/vote.cpp
+CMakeFiles/simulate.dir/src/vote.cpp.o: /home/nate/senior_design/v_oat/src/vote.cpp
 CMakeFiles/simulate.dir/src/vote.cpp.o: CMakeFiles/simulate.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/simulate.dir/src/vote.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/vote.cpp.o -MF CMakeFiles/simulate.dir/src/vote.cpp.o.d -o CMakeFiles/simulate.dir/src/vote.cpp.o -c /home/hanseun/v_oat/src/vote.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/simulate.dir/src/vote.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/vote.cpp.o -MF CMakeFiles/simulate.dir/src/vote.cpp.o.d -o CMakeFiles/simulate.dir/src/vote.cpp.o -c /home/nate/senior_design/v_oat/src/vote.cpp
 
 CMakeFiles/simulate.dir/src/vote.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/simulate.dir/src/vote.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/v_oat/src/vote.cpp > CMakeFiles/simulate.dir/src/vote.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nate/senior_design/v_oat/src/vote.cpp > CMakeFiles/simulate.dir/src/vote.cpp.i
 
 CMakeFiles/simulate.dir/src/vote.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simulate.dir/src/vote.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/v_oat/src/vote.cpp -o CMakeFiles/simulate.dir/src/vote.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nate/senior_design/v_oat/src/vote.cpp -o CMakeFiles/simulate.dir/src/vote.cpp.s
 
 CMakeFiles/simulate.dir/src/platform.cpp.o: CMakeFiles/simulate.dir/flags.make
-CMakeFiles/simulate.dir/src/platform.cpp.o: /home/hanseun/v_oat/src/platform.cpp
+CMakeFiles/simulate.dir/src/platform.cpp.o: /home/nate/senior_design/v_oat/src/platform.cpp
 CMakeFiles/simulate.dir/src/platform.cpp.o: CMakeFiles/simulate.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/simulate.dir/src/platform.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/platform.cpp.o -MF CMakeFiles/simulate.dir/src/platform.cpp.o.d -o CMakeFiles/simulate.dir/src/platform.cpp.o -c /home/hanseun/v_oat/src/platform.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/simulate.dir/src/platform.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/platform.cpp.o -MF CMakeFiles/simulate.dir/src/platform.cpp.o.d -o CMakeFiles/simulate.dir/src/platform.cpp.o -c /home/nate/senior_design/v_oat/src/platform.cpp
 
 CMakeFiles/simulate.dir/src/platform.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/simulate.dir/src/platform.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/v_oat/src/platform.cpp > CMakeFiles/simulate.dir/src/platform.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nate/senior_design/v_oat/src/platform.cpp > CMakeFiles/simulate.dir/src/platform.cpp.i
 
 CMakeFiles/simulate.dir/src/platform.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simulate.dir/src/platform.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/v_oat/src/platform.cpp -o CMakeFiles/simulate.dir/src/platform.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nate/senior_design/v_oat/src/platform.cpp -o CMakeFiles/simulate.dir/src/platform.cpp.s
 
 CMakeFiles/simulate.dir/src/main.cpp.o: CMakeFiles/simulate.dir/flags.make
-CMakeFiles/simulate.dir/src/main.cpp.o: /home/hanseun/v_oat/src/main.cpp
+CMakeFiles/simulate.dir/src/main.cpp.o: /home/nate/senior_design/v_oat/src/main.cpp
 CMakeFiles/simulate.dir/src/main.cpp.o: CMakeFiles/simulate.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/simulate.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/main.cpp.o -MF CMakeFiles/simulate.dir/src/main.cpp.o.d -o CMakeFiles/simulate.dir/src/main.cpp.o -c /home/hanseun/v_oat/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/simulate.dir/src/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/simulate.dir/src/main.cpp.o -MF CMakeFiles/simulate.dir/src/main.cpp.o.d -o CMakeFiles/simulate.dir/src/main.cpp.o -c /home/nate/senior_design/v_oat/src/main.cpp
 
 CMakeFiles/simulate.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/simulate.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/v_oat/src/main.cpp > CMakeFiles/simulate.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nate/senior_design/v_oat/src/main.cpp > CMakeFiles/simulate.dir/src/main.cpp.i
 
 CMakeFiles/simulate.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/simulate.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/v_oat/src/main.cpp -o CMakeFiles/simulate.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nate/senior_design/v_oat/src/main.cpp -o CMakeFiles/simulate.dir/src/main.cpp.s
 
 # Object files for target simulate
 simulate_OBJECTS = \
@@ -140,11 +140,11 @@ bin/simulate: CMakeFiles/simulate.dir/src/vote.cpp.o
 bin/simulate: CMakeFiles/simulate.dir/src/platform.cpp.o
 bin/simulate: CMakeFiles/simulate.dir/src/main.cpp.o
 bin/simulate: CMakeFiles/simulate.dir/build.make
-bin/simulate: /home/hanseun/helib_install/helib_pack/lib/libhelib.a
-bin/simulate: /home/hanseun/helib_install/helib_pack/lib/libntl.so
-bin/simulate: /home/hanseun/helib_install/helib_pack/lib/libgmp.so
+bin/simulate: /usr/local/helib_pack/lib/libhelib.a
+bin/simulate: /usr/local/helib_pack/lib/libntl.so
+bin/simulate: /usr/local/helib_pack/lib/libgmp.so
 bin/simulate: CMakeFiles/simulate.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hanseun/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable bin/simulate"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable bin/simulate"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/simulate.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -156,6 +156,6 @@ CMakeFiles/simulate.dir/clean:
 .PHONY : CMakeFiles/simulate.dir/clean
 
 CMakeFiles/simulate.dir/depend:
-	cd /home/hanseun/v_oat/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/hanseun/v_oat /home/hanseun/v_oat /home/hanseun/v_oat/build /home/hanseun/v_oat/build /home/hanseun/v_oat/build/CMakeFiles/simulate.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/nate/senior_design/v_oat/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/nate/senior_design/v_oat /home/nate/senior_design/v_oat /home/nate/senior_design/v_oat/build /home/nate/senior_design/v_oat/build /home/nate/senior_design/v_oat/build/CMakeFiles/simulate.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/simulate.dir/depend
 

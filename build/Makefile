@@ -44,10 +44,6 @@ cmake_force:
 #=============================================================================
 # Set environment variables for the build.
 
-mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-mkfile_dir := $(dir $(mkfile_path))
-
-
 # The shell in which to execute make rules.
 SHELL = /bin/sh
 
@@ -61,10 +57,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = $(mkfile_dr)/../
+CMAKE_SOURCE_DIR = /home/nate/senior_design/v_oat
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = $(mkfile_dr)/
+CMAKE_BINARY_DIR = /home/nate/senior_design/v_oat/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -91,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start $(mkfile_dir)/CMakeFile $(mkfile_dir)/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nate/senior_design/v_oat/build/CMakeFiles /home/nate/senior_design/v_oat/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start $(mkfile_dir)/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nate/senior_design/v_oat/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
