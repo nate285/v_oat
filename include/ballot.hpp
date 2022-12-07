@@ -8,9 +8,9 @@
 #include <unordered_set>
 #include <optional>
 
-
-class ballot {
-    private:
+class ballot
+{
+private:
     std::vector<std::string> candidates;
     helib::Ctxt b;
     int max_votes;
@@ -19,26 +19,26 @@ class ballot {
     bool ready = false;
     bool closed = false;
 
-    public:
-    ballot() = delete;
+public:
+    ballot();
     ballot(int, helib::Ctxt);
-    ballot(const ballot &) = delete;
-    ballot(ballot &&) = delete;
-    ballot &operator=(ballot) = delete;
-
+    ballot(const ballot &);
+    ballot(ballot &&);
+    ballot &operator=(ballot);
+    ballot &operator=(const ballot &);
     void showCandidateInfo();
-    void initBallot(helib::Context*, helib::PubKey*);
+    void initBallot(helib::Context *, helib::PubKey *);
     int registerCandidate(std::string);
-    int registerVoter(vote*);
-    int cast(vote*);
+    int registerVoter(vote *);
+    int cast(vote *);
     void close();
     void done();
     std::string getCandidate(int);
 
     helib::Ctxt showResult();
-    
-    // friend std::ostream &operator<<(std::ostream, const ballot);
 
+    // friend std::ostream &operator<<(std::ostream, const ballot);
+    friend void swap(ballot &, ballot &) noexcept;
 };
 
 #endif
