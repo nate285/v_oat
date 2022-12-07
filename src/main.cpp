@@ -9,6 +9,27 @@
 #include "vote.hpp"
 #include "ballot.hpp"
 
+ballot *candidateRegistration(helib::Ctxt dum)
+{
+  std::cout << "Registering Candidates" << std::endl;
+  std::cout << "How many canidates would you like to register?" << std::endl;
+  int r;
+  char str[30];
+  std::cin >> r;
+  ballot *bal = new ballot{r, dum};
+  for (int i = 0; i < r; i++)
+  {
+    std::cout << "Registering candidate " << i + 1 << std::endl;
+    std::cout << "Enter name " << std::endl;
+    std::cin >> str;
+    bal->registerCandidate(str);
+  }
+
+  bal->showCandidateInfo();
+  bal->close();
+  return bal;
+}
+
 int main(int argc, char *argv[])
 {
   unsigned long p = 131;
@@ -102,15 +123,7 @@ int main(int argc, char *argv[])
   helib::Ctxt dummyE(public_key);
   public_key.Encrypt(dummyE, dummy);
 
-  std::cout << "Registering Candidates" << std::endl;
-  ballot bal{10, dummyE};
-  bal.registerCandidate("candidate 1");
-  bal.registerCandidate("candidate 2");
-  bal.registerCandidate("candidate 3");
-  bal.showCandidateInfo();
-  bal.close();
-  ballot t = bal;
-  t.showCandidateInfo();
+  ballot bal = *candidateRegistration(dummyE);
   bal.initBallot(&context, &public_key);
 
   std::cout << "Registering Voters" << std::endl;
