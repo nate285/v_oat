@@ -1,0 +1,15 @@
+security analysis 
+- implementation
+- algorithm
+**try to find ways to break it
+
+Bush v Gore voting machines
+https://hemisphericinstitute.org/en/emisferica-1-1-enacting-democracy/1-1-essays/dysfunctional-performance-the-u-s-voting-machine-debacle-and-the-machinery-of-democracy.html
+https://abcnews.go.com/WNT/story?id=239735&page=1
+
+- are we covering all basics of security
+- risks with connecting to DBMS, the entire supply chain
+- voter registration... 
+- potential breaches when we connect our components
+
+MySQL DBMS, amazon MongoDB, linuxbox DSL
