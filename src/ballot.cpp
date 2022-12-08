@@ -15,12 +15,19 @@ ballot::ballot(const ballot &bb) : max_votes{bb.max_votes}, b{bb.b}
     reg_votes = bb.reg_votes;
 }
 
-void ballot::showCandidateInfo()
+char *ballot::showCandidateInfo()
 {
-    cout << "Here are the registered candidates: " << endl;
+    char *buf = (char *)malloc(300 * sizeof(char));
+    char tmpBuf[30];
+    char tmpBuf2[35];
+    sprintf(buf, "Here are the registered candidates:\n");
     for (int i{0}; i < candidates.size(); ++i)
-        cout << i + 1 << ". " << candidates[i] << "\n";
-    cout << endl;
+    {
+        strcpy(tmpBuf, candidates[i].c_str());
+        sprintf(tmpBuf2, "%d: %s\n", i, tmpBuf);
+        strcat(buf, tmpBuf2);
+    }
+    return buf;
 }
 
 void ballot::initBallot(helib::Context *context, helib::PubKey *public_key)

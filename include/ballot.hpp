@@ -26,7 +26,7 @@ public:
     ballot(ballot &&);
     ballot &operator=(ballot);
     ballot &operator=(const ballot &);
-    void showCandidateInfo();
+    char *showCandidateInfo();
     void initBallot(helib::Context *, helib::PubKey *);
     int registerCandidate(std::string);
     int registerVoter(vote *);

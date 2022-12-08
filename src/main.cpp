@@ -48,7 +48,9 @@ ballot *candidateRegistration(helib::Ctxt dum)
     bal->registerCandidate(str);
   }
 
-  bal->showCandidateInfo();
+  char *info = bal->showCandidateInfo();
+  std::cout << info << std::endl;
+  free(info);
   bal->close();
   return bal;
 }
@@ -70,18 +72,30 @@ void *casting_vote(void *socket_ptr)
   std::cout << "ID is " << recBuf << std::endl;
 
   int id = atoi(recBuf);
+  int vote_val;
+  char *candidateBuf;
+  while (1)
+  {
+    sprintf(buf, "Who are you voting for?\nEnter -1 to see options");
+    len = strlen(buf) + 1;
 
-  sprintf(buf, "Who are you voting for?");
-  len = strlen(buf) + 1;
+    send(new_s, buf, len, 0);
 
-  send(new_s, buf, len, 0);
+    len = recv(new_s, recBuf, sizeof(recBuf), 0);
+    vote_val = atoi(recBuf);
+    if (vote_val != -1)
+    {
+      break;
+    }
 
-  len = recv(new_s, recBuf, sizeof(recBuf), 0);
+    candidateBuf = bal->showCandidateInfo();
+    len = strlen(candidateBuf) + 1;
+    send(new_s, candidateBuf, len, 0);
 
-  std::cout << "len is " << len << std::endl;
+    free(candidateBuf);
+  }
+
   std::cout << "They voted for " << recBuf << std::endl;
-
-  int vote_val = atoi(recBuf);
 
   vote *v = new vote(id, id + 1, *dumdum);
 
