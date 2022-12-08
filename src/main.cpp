@@ -28,7 +28,6 @@ helib::PubKey *pkey;
 
 void sigStpHandler(int signum)
 {
-  std::cout << "in sig handler" << std::endl;
   brkk = 1;
   close(s);
 }
@@ -132,7 +131,6 @@ void handleVoting()
 
   while (1)
   {
-    std::cout << "BOUTTA BLOCK" << std::endl;
     if ((new_s = accept(s, (struct sockaddr *)&sin, &len)) < 0)
     {
       //   perror("simplex-talk:accepct");
@@ -143,7 +141,6 @@ void handleVoting()
       close(s);
       break;
     }
-    std::cout << "PAST BLOCK BLOCK" << std::endl;
 
     pthread_t new_thread;
     int *socket_ptr = (int *)malloc(sizeof(int));
@@ -284,7 +281,6 @@ int main(int argc, char *argv[])
       cur = num;
     }
   }
-  std::cerr << "Here" << std::endl;
   string_result = bal->getCandidate(win);
   if (debug)
   {
@@ -292,7 +288,7 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
   }
 
-  std::cout << "\nWinner is (should be candidate 1): " << string_result << std::endl;
+  std::cout << "\nWinner is: " << string_result << std::endl;
 
   return 0;
 }
