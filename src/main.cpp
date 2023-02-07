@@ -74,12 +74,12 @@ void *casting_vote(void *socket_ptr)
   int id = atoi(recBuf);
   int vote_val;
   char *candidateBuf;
+  sprintf(buf, "Enter who you are voting for\nEnter -1 to see options");
+  len = strlen(buf) + 1;
+
+  send(new_s, buf, len, 0);
   while (1)
   {
-    sprintf(buf, "Who are you voting for?\nEnter -1 to see options");
-    len = strlen(buf) + 1;
-
-    send(new_s, buf, len, 0);
 
     len = recv(new_s, recBuf, sizeof(recBuf), 0);
     vote_val = atoi(recBuf);
@@ -89,11 +89,14 @@ void *casting_vote(void *socket_ptr)
     }
 
     candidateBuf = bal->showCandidateInfo();
+
+    strcat(candidateBuf, buf);
     len = strlen(candidateBuf) + 1;
     send(new_s, candidateBuf, len, 0);
 
     free(candidateBuf);
   }
+  close(new_s);
 
   std::cout << "They voted for " << recBuf << std::endl;
 
@@ -108,7 +111,6 @@ void *casting_vote(void *socket_ptr)
   std::cout << "CASTING VOTE" << std::endl;
 
   bal->cast(v);
-  close(new_s);
   return NULL;
 }
 
