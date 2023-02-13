@@ -30,6 +30,11 @@ char *ballot::showCandidateInfo()
     return buf;
 }
 
+int ballot::getNumberCanidates()
+{
+    return candidates.size();
+}
+
 void ballot::initBallot(helib::Context *context, helib::PubKey *public_key)
 {
     helib::Ptxt<helib::BGV> p_b(*context);
