@@ -68,7 +68,7 @@ void *casting_vote(void *socket_ptr)
 
   char recBuf[200];
   char notValid[100];
-  sprintf(notValid, "Not a valid candidate\n");
+  sprintf(notValid, "Not a valid candidate, please enter a vote \n");
 
   len = recv(new_s, recBuf, sizeof(recBuf), 0);
 
@@ -83,14 +83,28 @@ void *casting_vote(void *socket_ptr)
   send(new_s, buf, len, 0);
   while (1)
   {
+    vote_val = -1;
+    memset(recBuf, 0, sizeof(recBuf));
 
     len = recv(new_s, recBuf, sizeof(recBuf), 0);
+    std::cerr << "len is " << len << "\n";
+
+    if (recBuf[0] == '\n')
+    {
+
+      send(new_s, "Enter a vote", 12, 0);
+      std::cerr << "HEREEEEEEE"
+                << "\n";
+      continue;
+    }
     vote_val = atoi(recBuf);
+    std::cout << "The vote_val is " << vote_val << "\n";
     int num_candidates = bal->getNumberCanidates();
     if (vote_val > num_candidates - 1 || vote_val < -1)
     {
       len = strlen(notValid) + 1;
       send(new_s, notValid, len, 0);
+      continue;
     }
     else if (vote_val != -1)
     {
