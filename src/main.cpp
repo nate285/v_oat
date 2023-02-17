@@ -72,9 +72,8 @@ void *casting_vote(void *socket_ptr)
 
   len = recv(new_s, recBuf, sizeof(recBuf), 0);
 
-  std::cout << "ID is " << recBuf << std::endl;
-
   int id = atoi(recBuf);
+  std::cout << "ID is " << id << std::endl;
   int vote_val;
   char *candidateBuf;
   sprintf(buf, "Enter who you are voting for\nEnter -1 to see options");
@@ -87,14 +86,11 @@ void *casting_vote(void *socket_ptr)
     memset(recBuf, 0, sizeof(recBuf));
 
     len = recv(new_s, recBuf, sizeof(recBuf), 0);
-    std::cerr << "len is " << len << "\n";
 
     if (recBuf[0] == '\n')
     {
 
       send(new_s, "Enter a vote", 12, 0);
-      std::cerr << "HEREEEEEEE"
-                << "\n";
       continue;
     }
     vote_val = atoi(recBuf);
@@ -121,7 +117,7 @@ void *casting_vote(void *socket_ptr)
   }
   close(new_s);
 
-  std::cout << "They voted for " << recBuf << std::endl;
+  std::cout << "They voted for " << vote_val << std::endl;
 
   vote *v = new vote(id, id + 1, *dumdum);
 

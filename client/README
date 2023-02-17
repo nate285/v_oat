@@ -1,0 +1,17 @@
+V_Oat Client:
+
+This is the client to submit a single vote. 
+
+Setup:
+
+run make
+
+Running the client:
+
+client takes in two command line arguments, the ip address and port.
+
+Example:
+
+./client 127.0.0.1 8080
+
+Should then see instructions to enter ID and vote.
