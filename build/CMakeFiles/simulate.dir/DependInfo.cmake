@@ -8,10 +8,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/hanseun/v_oat/src/ballot.cpp" "CMakeFiles/simulate.dir/src/ballot.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/ballot.cpp.o.d"
-  "/home/hanseun/v_oat/src/main.cpp" "CMakeFiles/simulate.dir/src/main.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/main.cpp.o.d"
-  "/home/hanseun/v_oat/src/platform.cpp" "CMakeFiles/simulate.dir/src/platform.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/platform.cpp.o.d"
-  "/home/hanseun/v_oat/src/vote.cpp" "CMakeFiles/simulate.dir/src/vote.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/vote.cpp.o.d"
+  "/home/nate/senior_design/v_oat/src/ballot.cpp" "CMakeFiles/simulate.dir/src/ballot.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/ballot.cpp.o.d"
+  "/home/nate/senior_design/v_oat/src/main.cpp" "CMakeFiles/simulate.dir/src/main.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/main.cpp.o.d"
+  "/home/nate/senior_design/v_oat/src/platform.cpp" "CMakeFiles/simulate.dir/src/platform.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/platform.cpp.o.d"
+  "/home/nate/senior_design/v_oat/src/vote.cpp" "CMakeFiles/simulate.dir/src/vote.cpp.o" "gcc" "CMakeFiles/simulate.dir/src/vote.cpp.o.d"
   )
 
 # Targets to which this target links.
