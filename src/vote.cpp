@@ -2,7 +2,8 @@
 
 vote::vote(int id, int person, helib::Ctxt dummy) : id{id}, voter{person}, v{dummy} {}
 
-void vote::cast(helib::Context *context, helib::PubKey *public_key, int to) {
+void vote::cast(helib::Context *context, helib::PubKey *public_key, int to)
+{
     helib::Ptxt<helib::BGV> p_v(*context);
     p_v.at(to) = 1;
 
@@ -12,18 +13,22 @@ void vote::cast(helib::Context *context, helib::PubKey *public_key, int to) {
     ready = true;
 }
 
-int vote::getId() {
+int vote::getId()
+{
     return id;
 }
 
-int vote::getVoter() {
+int vote::getVoter()
+{
     return voter;
 }
 
-helib::Ctxt vote::getVote() {
+helib::Ctxt vote::getVote()
+{
     return v;
 }
 
-bool vote::voted() {
+bool vote::voted()
+{
     return ready;
 }

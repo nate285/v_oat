@@ -1,17 +1,100 @@
 #include <iostream>
-
+#include <cstdlib>
+#include <netinet/ip.h>
+#include <arpa/inet.h>
 #include <helib/helib.h>
 #include <helib/EncryptedArray.h>
 #include <helib/ArgMap.h>
 #include <NTL/BasicThreadPool.h>
+#include <sys/socket.h>
+#include <pthread.h>
+#include <csignal>
+#include <string>
+#include <math.h>
 
 #include "platform.hpp"
 #include "vote.hpp"
 #include "ballot.hpp"
 
+#define MAX_PENDING 10
+#define MAX_LINE 20
 
-int main(int argc, char* argv[])
+std::vector<vote *> voters;
+
+void *imma_vote(void *arg)
 {
+  std::cout << "voting" << std::endl;
+  int new_s = *(int *)arg;
+  socklen_t len;
+  char buf[MAX_LINE];
+  int id[10];
+  while (len = recv(new_s, buf, sizeof(buf), 0))
+  {
+    printf("%s", buf);
+    printf("\n");
+    fflush(stdout);
+    break;
+  }
+  close(new_s);
+  return 0;
+}
+
+int socket_setup()
+{
+  char host_addr[10] = "127.0.0.1";
+  int port = 8080;
+  /*setup passive open*/
+  int s;
+  if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+  {
+    perror("simplex-talk: socket");
+    exit(1);
+  }
+
+  /* Config the server address */
+  sockaddr_in sin;
+  sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = inet_addr(host_addr);
+  sin.sin_port = htons(port);
+  // Set all bits of the padding field to 0
+  memset(sin.sin_zero, '\0', sizeof(sin.sin_zero));
+
+  /* Bind the socket to the address */
+  if ((bind(s, (struct sockaddr *)&sin, sizeof(sin))) < 0)
+  {
+    perror("simplex-talk: bind");
+    exit(1);
+  }
+
+  // connections can be pending if many concurrent client requests
+  listen(s, MAX_PENDING);
+
+  /* wait for connection, then receive and print text */
+  int new_s;
+  socklen_t len = sizeof(sin);
+  char buf[20];
+  pthread_t tids[10];
+  int i = 0;
+  while (1)
+  {
+    if ((new_s = accept(s, (struct sockaddr *)&sin, &len)) < 0)
+    {
+      perror("simplex-talk: accept");
+      exit(1);
+    }
+    // create thread here
+    pthread_create(&tids[i], NULL, imma_vote, (void *)&new_s);
+    i++;
+    // new_s++;
+  }
+  return 0;
+}
+
+int main(int argc, char *argv[])
+{
+
+  socket_setup();
+
   unsigned long p = 131;
   unsigned long m = 130;
   unsigned long r = 1;
@@ -66,11 +149,11 @@ int main(int argc, char* argv[])
   // Set the secret key (upcast: FHESecKey is a subclass of FHEPubKey)
   std::cout << "\nCreating Public Key ...";
   HELIB_NTIMER_START(timer_PubKey);
-  helib::PubKey& public_key = secret_key;
+  helib::PubKey &public_key = secret_key;
   HELIB_NTIMER_STOP(timer_PubKey);
 
   // Get the EncryptedArray of the context
-  const helib::EncryptedArray& ea = context.getEA();
+  const helib::EncryptedArray &ea = context.getEA();
 
   // Print the context
   std::cout << std::endl;
@@ -87,7 +170,8 @@ int main(int argc, char* argv[])
   std::cout << "\nNumber of slots: " << nslots << std::endl;
 
   // Print DB Creation Timers
-  if (debug) {
+  if (debug)
+  {
     helib::printNamedTimer(std::cout << std::endl, "timer_Context");
     helib::printNamedTimer(std::cout, "timer_Chain");
     helib::printNamedTimer(std::cout, "timer_SecKey");
@@ -98,12 +182,12 @@ int main(int argc, char* argv[])
   std::cout << "\nInitialization Completed" << std::endl;
   std::cout << "--------------------------" << std::endl;
 
-  
   helib::Ptxt<helib::BGV> dummy(context);
   helib::Ctxt dummyE(public_key);
   public_key.Encrypt(dummyE, dummy);
 
   std::cout << "Registering Candidates" << std::endl;
+
   ballot bal{10, dummyE};
   bal.registerCandidate("candidate 1");
   bal.registerCandidate("candidate 2");
@@ -112,24 +196,25 @@ int main(int argc, char* argv[])
   bal.close();
   bal.initBallot(&context, &public_key);
 
+  int num_voters;
+
   std::cout << "Registering Voters" << std::endl;
-  std::vector<vote*> voters;
-  
-  for (int i{0}; i < 10; ++i)
-    voters.push_back(new vote(i, 300+i, dummyE));
+
+  for (int i{0}; i < num_voters; ++i)
+    voters.push_back(new vote(i, 300 + i, dummyE));
   for (auto &v : voters)
     bal.registerVoter(v);
 
   std::cout << "Casting Votes" << std::endl;
   int ind{0};
-  for (auto &v : voters) {
-    v->cast(&context, &public_key, ind % 3);
-    ind++;
+  for (auto &v : voters)
+  {
+    v->cast(&context, &public_key, 2);
   }
   std::cout << "In the ballot" << std::endl;
   for (auto &v : voters)
     bal.cast(v);
-  
+
   bal.done();
   std::cout << "Votes Casted" << std::endl;
   std::cout << "--------------------------" << std::endl;
@@ -146,15 +231,18 @@ int main(int argc, char* argv[])
   int win{0};
   int cur{0};
   std::string string_result;
-  for (long i{0}; i < plaintext_result.size(); ++i) {
+  for (long i{0}; i < plaintext_result.size(); ++i)
+  {
     long num = static_cast<long>(plaintext_result[i]);
-    if (num > cur) {
+    if (num > cur)
+    {
       win = i;
       cur = num;
     }
   }
   string_result = bal.getCandidate(win);
-  if (debug) {
+  if (debug)
+  {
     helib::printNamedTimer(std::cout, "timer_DecryptResult");
     std::cout << std::endl;
   }
