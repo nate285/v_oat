@@ -40,8 +40,10 @@ include_directories(./include)
 
 find_package(helib "${HELIB_VERSION}" EXACT REQUIRED)
 
-add_executable(simulate ./src/ballot.cpp ./src/vote.cpp ./src/platform.cpp ./src/main.cpp)
+add_executable(server ./src/ballot.cpp ./src/vote.cpp ./src/platform.cpp ./src/main.cpp)
 
-target_link_libraries(simulate helib)
+add_executable(client ./src/client.cpp)
 
-#cmake -Dhelib_DIR=/home/hanseun/helib_install/helib_pack/share/cmake/helib ../ .
+target_link_libraries(server helib)
+
+#cmake -Dhelib_DIR=/home/hanseun/Documents/helib_install/helib_pack/share/cmake/helib ../ .

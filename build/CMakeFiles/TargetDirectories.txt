@@ -1,3 +1,4 @@
-/home/nate/senior_design/v_oat/build/CMakeFiles/simulate.dir
-/home/nate/senior_design/v_oat/build/CMakeFiles/edit_cache.dir
-/home/nate/senior_design/v_oat/build/CMakeFiles/rebuild_cache.dir
+/home/hanseun/Documents/v_oat/build/CMakeFiles/server.dir
+/home/hanseun/Documents/v_oat/build/CMakeFiles/client.dir
+/home/hanseun/Documents/v_oat/build/CMakeFiles/edit_cache.dir
+/home/hanseun/Documents/v_oat/build/CMakeFiles/rebuild_cache.dir
