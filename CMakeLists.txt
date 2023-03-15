@@ -42,7 +42,8 @@ find_package(helib "${HELIB_VERSION}" EXACT REQUIRED)
 
 add_executable(server ./src/ballot.cpp ./src/vote.cpp ./src/platform.cpp ./src/main.cpp)
 
-add_executable(client ./src/client.cpp)
+project(client C)
+add_executable(client ./src/client.c)
 
 target_link_libraries(server helib)
 
