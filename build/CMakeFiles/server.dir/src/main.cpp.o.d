@@ -1,5 +1,5 @@
 CMakeFiles/server.dir/src/main.cpp.o: \
- /home/hanseun/Documents/v_oat/src/main.cpp /usr/include/stdc-predef.h \
+ /home/nate/senior_design/v_oat/src/main.cpp /usr/include/stdc-predef.h \
  /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -175,6 +175,50 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
  /usr/include/x86_64-linux-gnu/bits/sigthread.h \
  /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
+ /usr/include/openssl/rsa.h /usr/include/openssl/macros.h \
+ /usr/include/x86_64-linux-gnu/openssl/opensslconf.h \
+ /usr/include/x86_64-linux-gnu/openssl/configuration.h \
+ /usr/include/openssl/opensslv.h /usr/include/openssl/asn1.h \
+ /usr/include/openssl/e_os2.h /usr/include/openssl/bio.h \
+ /usr/include/openssl/crypto.h /usr/include/openssl/safestack.h \
+ /usr/include/openssl/stack.h /usr/include/openssl/types.h \
+ /usr/lib/gcc/x86_64-linux-gnu/11/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+ /usr/include/linux/limits.h \
+ /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+ /usr/include/openssl/cryptoerr.h /usr/include/openssl/symhacks.h \
+ /usr/include/openssl/cryptoerr_legacy.h /usr/include/openssl/core.h \
+ /usr/include/openssl/bioerr.h /usr/include/openssl/asn1err.h \
+ /usr/include/openssl/bn.h /usr/include/openssl/bnerr.h \
+ /usr/include/openssl/rsaerr.h /usr/include/openssl/x509.h \
+ /usr/include/openssl/buffer.h /usr/include/openssl/buffererr.h \
+ /usr/include/openssl/evp.h /usr/include/openssl/core_dispatch.h \
+ /usr/include/openssl/evperr.h /usr/include/openssl/params.h \
+ /usr/include/openssl/objects.h /usr/include/openssl/obj_mac.h \
+ /usr/include/openssl/objectserr.h /usr/include/openssl/ec.h \
+ /usr/include/openssl/ecerr.h /usr/include/openssl/dsa.h \
+ /usr/include/openssl/dh.h /usr/include/openssl/dherr.h \
+ /usr/include/openssl/dsaerr.h /usr/include/openssl/sha.h \
+ /usr/include/openssl/x509err.h /usr/include/openssl/x509_vfy.h \
+ /usr/include/openssl/lhash.h /usr/include/openssl/pkcs7.h \
+ /usr/include/openssl/pkcs7err.h /usr/include/openssl/ocsp.h \
+ /usr/include/openssl/http.h /usr/include/openssl/conf.h \
+ /usr/include/openssl/conferr.h /usr/include/openssl/conftypes.h \
+ /usr/include/openssl/x509v3.h /usr/include/openssl/x509v3err.h \
+ /usr/include/openssl/ocsperr.h /usr/include/openssl/pem.h \
+ /usr/include/openssl/pemerr.h /usr/include/openssl/ssl.h \
+ /usr/include/openssl/comp.h /usr/include/openssl/comperr.h \
+ /usr/include/openssl/hmac.h /usr/include/openssl/async.h \
+ /usr/include/openssl/asyncerr.h /usr/include/openssl/ct.h \
+ /usr/include/openssl/cterr.h /usr/include/openssl/sslerr.h \
+ /usr/include/openssl/sslerr_legacy.h /usr/include/openssl/prov_ssl.h \
+ /usr/include/openssl/ssl2.h /usr/include/openssl/ssl3.h \
+ /usr/include/openssl/tls1.h /usr/include/openssl/dtls1.h \
+ /usr/include/openssl/srtp.h /usr/include/openssl/err.h \
  /usr/include/x86_64-linux-gnu/sys/socket.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
  /usr/include/x86_64-linux-gnu/bits/socket.h \
@@ -193,37 +237,36 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
  /usr/include/netinet/ip.h /usr/include/netinet/in.h \
  /usr/include/x86_64-linux-gnu/bits/in.h /usr/include/arpa/inet.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/helib.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/version.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/DoubleCRT.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/zzX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vector.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/tools.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ctools.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/config.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/mach_desc.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ALL_FEATURES.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_ALIGNED_ARRAY.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_BUILTIN_CLZL.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_LL_TYPE.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_SSSE3.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_AVX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_PCLMUL.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_AVX2.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_FMA.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_AVX512F.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_COPY_TRAITS1.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_COPY_TRAITS2.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_CHRONO_TIME.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_MACOS_TIME.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_POSIX_TIME.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_AES_NI.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/HAVE_KMA.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/PackageInfo.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/new.h \
- /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
- /usr/include/c++/11/cmath /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /usr/local/helib_pack/include/helib/helib.h \
+ /usr/local/helib_pack/include/helib/version.h \
+ /usr/local/helib_pack/include/helib/DoubleCRT.h \
+ /usr/local/helib_pack/include/helib/zzX.h \
+ /usr/local/helib_pack/include/NTL/vector.h \
+ /usr/local/helib_pack/include/NTL/tools.h \
+ /usr/local/helib_pack/include/NTL/ctools.h \
+ /usr/local/helib_pack/include/NTL/config.h \
+ /usr/local/helib_pack/include/NTL/mach_desc.h \
+ /usr/local/helib_pack/include/NTL/ALL_FEATURES.h \
+ /usr/local/helib_pack/include/NTL/HAVE_ALIGNED_ARRAY.h \
+ /usr/local/helib_pack/include/NTL/HAVE_BUILTIN_CLZL.h \
+ /usr/local/helib_pack/include/NTL/HAVE_LL_TYPE.h \
+ /usr/local/helib_pack/include/NTL/HAVE_SSSE3.h \
+ /usr/local/helib_pack/include/NTL/HAVE_AVX.h \
+ /usr/local/helib_pack/include/NTL/HAVE_PCLMUL.h \
+ /usr/local/helib_pack/include/NTL/HAVE_AVX2.h \
+ /usr/local/helib_pack/include/NTL/HAVE_FMA.h \
+ /usr/local/helib_pack/include/NTL/HAVE_AVX512F.h \
+ /usr/local/helib_pack/include/NTL/HAVE_COPY_TRAITS1.h \
+ /usr/local/helib_pack/include/NTL/HAVE_COPY_TRAITS2.h \
+ /usr/local/helib_pack/include/NTL/HAVE_CHRONO_TIME.h \
+ /usr/local/helib_pack/include/NTL/HAVE_MACOS_TIME.h \
+ /usr/local/helib_pack/include/NTL/HAVE_POSIX_TIME.h \
+ /usr/local/helib_pack/include/NTL/HAVE_AES_NI.h \
+ /usr/local/helib_pack/include/NTL/HAVE_KMA.h \
+ /usr/local/helib_pack/include/NTL/PackageInfo.h \
+ /usr/local/helib_pack/include/NTL/new.h /usr/include/c++/11/utility \
+ /usr/include/c++/11/bits/stl_relops.h /usr/include/c++/11/cmath \
+ /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
@@ -245,14 +288,14 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/c++/11/tr1/poly_hermite.tcc \
  /usr/include/c++/11/tr1/poly_laguerre.tcc \
  /usr/include/c++/11/tr1/riemann_zeta.tcc /usr/include/c++/11/cstring \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/lzz_pX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/lzz_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ZZ.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/lip.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/gmp_aux.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/SmartPtr.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/thread.h \
- /usr/include/c++/11/atomic /usr/include/c++/11/bits/atomic_base.h \
+ /usr/local/helib_pack/include/NTL/lzz_pX.h \
+ /usr/local/helib_pack/include/NTL/lzz_p.h \
+ /usr/local/helib_pack/include/NTL/ZZ.h \
+ /usr/local/helib_pack/include/NTL/lip.h \
+ /usr/local/helib_pack/include/NTL/gmp_aux.h \
+ /usr/local/helib_pack/include/NTL/SmartPtr.h \
+ /usr/local/helib_pack/include/NTL/thread.h /usr/include/c++/11/atomic \
+ /usr/include/c++/11/bits/atomic_base.h \
  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
  /usr/include/c++/11/mutex /usr/include/c++/11/tuple \
  /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
@@ -261,21 +304,21 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/parse_numbers.h \
  /usr/include/c++/11/bits/std_mutex.h \
  /usr/include/c++/11/bits/unique_lock.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/sp_arith.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/FFT.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_long.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/LazyTable.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_lzz_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_ZZ.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/Lazy.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/mat_lzz_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/matrix.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_vec_lzz_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/GF2X.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/WordVector.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_GF2.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/GF2.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/NumbTh.h \
+ /usr/local/helib_pack/include/NTL/sp_arith.h \
+ /usr/local/helib_pack/include/NTL/FFT.h \
+ /usr/local/helib_pack/include/NTL/vec_long.h \
+ /usr/local/helib_pack/include/NTL/LazyTable.h \
+ /usr/local/helib_pack/include/NTL/vec_lzz_p.h \
+ /usr/local/helib_pack/include/NTL/vec_ZZ.h \
+ /usr/local/helib_pack/include/NTL/Lazy.h \
+ /usr/local/helib_pack/include/NTL/mat_lzz_p.h \
+ /usr/local/helib_pack/include/NTL/matrix.h \
+ /usr/local/helib_pack/include/NTL/vec_vec_lzz_p.h \
+ /usr/local/helib_pack/include/NTL/GF2X.h \
+ /usr/local/helib_pack/include/NTL/WordVector.h \
+ /usr/local/helib_pack/include/NTL/vec_GF2.h \
+ /usr/local/helib_pack/include/NTL/GF2.h \
+ /usr/local/helib_pack/include/helib/NumbTh.h \
  /usr/include/c++/11/algorithm /usr/include/c++/11/bits/stl_algo.h \
  /usr/include/c++/11/bits/algorithmfwd.h \
  /usr/include/c++/11/bits/stl_heap.h \
@@ -300,15 +343,7 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/stl_tree.h /usr/include/c++/11/bits/stl_set.h \
  /usr/include/c++/11/bits/stl_multiset.h /usr/include/c++/11/complex \
  /usr/include/c++/11/sstream /usr/include/c++/11/bits/sstream.tcc \
- /usr/include/c++/11/climits \
- /usr/lib/gcc/x86_64-linux-gnu/11/include/limits.h \
- /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h \
- /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
- /usr/include/x86_64-linux-gnu/bits/local_lim.h \
- /usr/include/linux/limits.h \
- /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
- /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
- /usr/include/x86_64-linux-gnu/bits/uio_lim.h /usr/include/c++/11/fstream \
+ /usr/include/c++/11/climits /usr/include/c++/11/fstream \
  /usr/include/c++/11/bits/codecvt.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
@@ -323,77 +358,75 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/shared_ptr_atomic.h \
  /usr/include/c++/11/backward/auto_ptr.h \
  /usr/include/c++/11/pstl/glue_memory_defs.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/version.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ZZX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ZZ_pX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ZZ_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/ZZVec.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_ZZ_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/mat_ZZ_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_vec_ZZ_p.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/xdouble.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/mat_GF2.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_vec_GF2.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/mat_GF2E.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_vec_GF2E.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_GF2E.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/GF2E.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/GF2XFactoring.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/pair_GF2X_long.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/pair.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/mat_lzz_pE.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_vec_lzz_pE.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/vec_lzz_pE.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/lzz_pE.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/lzz_pXFactoring.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/pair_lzz_pX_long.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/GF2EX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/GF2XVec.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/lzz_pEX.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/assertions.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/exceptions.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/apiAttributes.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/IndexMap.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/IndexSet.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/JsonWrapper.h \
- /usr/include/c++/11/any \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/ClonedPtr.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/timing.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/multicore.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/Context.h \
+ /usr/local/helib_pack/include/NTL/version.h \
+ /usr/local/helib_pack/include/NTL/ZZX.h \
+ /usr/local/helib_pack/include/NTL/ZZ_pX.h \
+ /usr/local/helib_pack/include/NTL/ZZ_p.h \
+ /usr/local/helib_pack/include/NTL/ZZVec.h \
+ /usr/local/helib_pack/include/NTL/vec_ZZ_p.h \
+ /usr/local/helib_pack/include/NTL/mat_ZZ_p.h \
+ /usr/local/helib_pack/include/NTL/vec_vec_ZZ_p.h \
+ /usr/local/helib_pack/include/NTL/xdouble.h \
+ /usr/local/helib_pack/include/NTL/mat_GF2.h \
+ /usr/local/helib_pack/include/NTL/vec_vec_GF2.h \
+ /usr/local/helib_pack/include/NTL/mat_GF2E.h \
+ /usr/local/helib_pack/include/NTL/vec_vec_GF2E.h \
+ /usr/local/helib_pack/include/NTL/vec_GF2E.h \
+ /usr/local/helib_pack/include/NTL/GF2E.h \
+ /usr/local/helib_pack/include/NTL/GF2XFactoring.h \
+ /usr/local/helib_pack/include/NTL/pair_GF2X_long.h \
+ /usr/local/helib_pack/include/NTL/pair.h \
+ /usr/local/helib_pack/include/NTL/mat_lzz_pE.h \
+ /usr/local/helib_pack/include/NTL/vec_vec_lzz_pE.h \
+ /usr/local/helib_pack/include/NTL/vec_lzz_pE.h \
+ /usr/local/helib_pack/include/NTL/lzz_pE.h \
+ /usr/local/helib_pack/include/NTL/lzz_pXFactoring.h \
+ /usr/local/helib_pack/include/NTL/pair_lzz_pX_long.h \
+ /usr/local/helib_pack/include/NTL/GF2EX.h \
+ /usr/local/helib_pack/include/NTL/GF2XVec.h \
+ /usr/local/helib_pack/include/NTL/lzz_pEX.h \
+ /usr/local/helib_pack/include/helib/assertions.h \
+ /usr/local/helib_pack/include/helib/exceptions.h \
+ /usr/local/helib_pack/include/helib/apiAttributes.h \
+ /usr/local/helib_pack/include/helib/IndexMap.h \
+ /usr/local/helib_pack/include/helib/IndexSet.h \
+ /usr/local/helib_pack/include/helib/JsonWrapper.h \
+ /usr/include/c++/11/any /usr/local/helib_pack/include/helib/ClonedPtr.h \
+ /usr/local/helib_pack/include/helib/timing.h \
+ /usr/local/helib_pack/include/helib/multicore.h \
+ /usr/local/helib_pack/include/helib/Context.h \
  /usr/include/c++/11/optional \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/PAlgebra.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/hypercube.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/PGFFT.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/CModulus.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/bluestein.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/recryption.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/primeChain.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/powerful.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/range.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/scheme.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/Ctxt.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/EncodedPtxt.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/norms.h \
- /usr/include/c++/11/cfloat \
+ /usr/local/helib_pack/include/helib/PAlgebra.h \
+ /usr/local/helib_pack/include/helib/hypercube.h \
+ /usr/local/helib_pack/include/helib/PGFFT.h \
+ /usr/local/helib_pack/include/helib/CModulus.h \
+ /usr/local/helib_pack/include/helib/bluestein.h \
+ /usr/local/helib_pack/include/helib/recryption.h \
+ /usr/local/helib_pack/include/helib/primeChain.h \
+ /usr/local/helib_pack/include/helib/powerful.h \
+ /usr/local/helib_pack/include/helib/range.h \
+ /usr/local/helib_pack/include/helib/scheme.h \
+ /usr/local/helib_pack/include/helib/Ctxt.h \
+ /usr/local/helib_pack/include/helib/EncodedPtxt.h \
+ /usr/local/helib_pack/include/helib/norms.h /usr/include/c++/11/cfloat \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/float.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/keySwitching.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/keys.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/EncryptedArray.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/log.h \
- /usr/include/c++/11/iomanip /usr/include/c++/11/locale \
+ /usr/local/helib_pack/include/helib/keySwitching.h \
+ /usr/local/helib_pack/include/helib/keys.h \
+ /usr/local/helib_pack/include/helib/EncryptedArray.h \
+ /usr/local/helib_pack/include/helib/log.h /usr/include/c++/11/iomanip \
+ /usr/include/c++/11/locale \
  /usr/include/c++/11/bits/locale_facets_nonio.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
  /usr/include/libintl.h /usr/include/c++/11/bits/locale_facets_nonio.tcc \
  /usr/include/c++/11/bits/locale_conv.h \
  /usr/include/c++/11/bits/quoted_string.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/Ptxt.h \
- /usr/include/c++/11/numeric /usr/include/c++/11/bits/stl_numeric.h \
+ /usr/local/helib_pack/include/helib/Ptxt.h /usr/include/c++/11/numeric \
+ /usr/include/c++/11/bits/stl_numeric.h \
  /usr/include/c++/11/pstl/glue_numeric_defs.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/PolyMod.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/PolyModRing.h \
- /home/hanseun/Documents/helib_install/helib_pack/include/helib/ArgMap.h \
+ /usr/local/helib_pack/include/helib/PolyMod.h \
+ /usr/local/helib_pack/include/helib/PolyModRing.h \
+ /usr/local/helib_pack/include/helib/ArgMap.h \
  /usr/include/c++/11/forward_list /usr/include/c++/11/bits/forward_list.h \
  /usr/include/c++/11/bits/forward_list.tcc /usr/include/c++/11/regex \
  /usr/include/c++/11/bitset /usr/include/c++/11/iterator \
@@ -413,13 +446,13 @@ CMakeFiles/server.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/regex.h /usr/include/c++/11/bits/regex.tcc \
  /usr/include/c++/11/bits/regex_executor.h \
  /usr/include/c++/11/bits/regex_executor.tcc \
- /home/hanseun/Documents/helib_install/helib_pack/include/NTL/BasicThreadPool.h \
+ /usr/local/helib_pack/include/NTL/BasicThreadPool.h \
  /usr/include/c++/11/thread /usr/include/c++/11/bits/std_thread.h \
  /usr/include/c++/11/bits/this_thread_sleep.h \
  /usr/include/c++/11/condition_variable \
- /home/hanseun/Documents/v_oat/./include/platform.hpp \
- /home/hanseun/Documents/v_oat/./include/vote.hpp \
- /home/hanseun/Documents/v_oat/./include/ballot.hpp \
- /home/hanseun/Documents/v_oat/./include/vote.hpp \
+ /home/nate/senior_design/v_oat/./include/platform.hpp \
+ /home/nate/senior_design/v_oat/./include/vote.hpp \
+ /home/nate/senior_design/v_oat/./include/ballot.hpp \
+ /home/nate/senior_design/v_oat/./include/vote.hpp \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h

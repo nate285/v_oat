@@ -5,6 +5,13 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <openssl/rsa.h>
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
@@ -18,6 +25,28 @@
 #include "vote.hpp"
 #include "ballot.hpp"
 
+#define HOME "./"
+
+#define CERTF HOME "cert.pem"
+
+#define KEYF HOME "key.pem"
+
+#define CHK_NULL(x) \
+  if ((x) == NULL)  \
+  exit(1)
+#define CHK_ERR(err, s) \
+  if ((err) == -1)      \
+  {                     \
+    perror(s);          \
+    exit(1);            \
+  }
+#define CHK_SSL(err)             \
+  if ((err) == -1)               \
+  {                              \
+    ERR_print_errors_fp(stderr); \
+    exit(2);                     \
+  }
+
 int brkk = 0;
 int s;
 ballot *bal;
@@ -25,6 +54,42 @@ helib::Ctxt *dumdum;
 std::vector<vote *> voters;
 helib::Context *ctxx;
 helib::PubKey *pkey;
+
+SSL_CTX *ctx;
+const SSL_METHOD *meth;
+
+void InitializeSSL()
+{
+
+  signal(SIGPIPE, SIG_IGN);
+
+  SSL_load_error_strings();
+  OpenSSL_add_ssl_algorithms();
+  meth = TLS_server_method();
+  ctx = SSL_CTX_new(meth);
+  if (!ctx)
+  {
+    ERR_print_errors_fp(stderr);
+    exit(2);
+  }
+
+  if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0)
+  {
+    ERR_print_errors_fp(stderr);
+    exit(3);
+  }
+  if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0)
+  {
+    ERR_print_errors_fp(stderr);
+    exit(4);
+  }
+
+  if (!SSL_CTX_check_private_key(ctx))
+  {
+    fprintf(stderr, "Private key does not match the certificate public key\n");
+    exit(5);
+  }
+}
 
 void sigStpHandler(int signum)
 {
@@ -57,9 +122,46 @@ ballot *candidateRegistration(helib::Ctxt dum)
 
 void *casting_vote(void *socket_ptr)
 {
+
+  size_t client_len;
+  SSL *ssl;
   int new_s = *((int *)socket_ptr);
+  X509 *client_cert;
+
+  ssl = SSL_new(ctx);
+
+  SSL_set_fd(ssl, new_s);
+  int e = SSL_accept(ssl);
+
+  client_cert = SSL_get_peer_certificate(ssl);
 
   char buf[200];
+  char *strr;
+
+  if (client_cert != NULL)
+  {
+    printf("Client certificate:\n");
+
+    strr = X509_NAME_oneline(X509_get_subject_name(client_cert), 0, 0);
+    CHK_NULL(strr);
+    printf("\t subject: %s\n", strr);
+    OPENSSL_free(strr);
+
+    strr = X509_NAME_oneline(X509_get_issuer_name(client_cert), 0, 0);
+    CHK_NULL(strr);
+    printf("\t issuer: %s\n", strr);
+    OPENSSL_free(strr);
+    X509_free(client_cert);
+  }
+  else
+  {
+    fprintf(stderr, "no cert\n");
+  }
+
+  int lenn = SSL_read(ssl, buf, sizeof(buf) - 1);
+  buf[lenn] = '\0';
+  fprintf(stderr, "THIS IS THE BUF %s\n", buf);
+  exit(0);
 
   sprintf(buf, "Enter ID");
   int len = strlen(buf) + 1;
@@ -135,6 +237,8 @@ void *casting_vote(void *socket_ptr)
 
 void handleVoting()
 {
+
+  InitializeSSL();
   int port = 8080;
   if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0)
   {
@@ -168,7 +272,7 @@ void handleVoting()
   {
     if ((new_s = accept(s, (struct sockaddr *)&sin, &len)) < 0)
     {
-      //   perror("simplex-talk:accepct");
+      perror("simplex-talk:accepct");
       //   exit(1);
     }
     if (brkk == 1)
@@ -177,6 +281,7 @@ void handleVoting()
       break;
     }
 
+    std::cerr << "line 281" << std::endl;
     pthread_t new_thread;
     int *socket_ptr = (int *)malloc(sizeof(int));
     *socket_ptr = new_s;
@@ -187,7 +292,7 @@ void handleVoting()
 int main(int argc, char *argv[])
 {
 
-  signal(SIGTSTP, sigStpHandler);
+  // signal(SIGTSTP, sigStpHandler);
   unsigned long p = 131;
   unsigned long m = 130;
   unsigned long r = 1;

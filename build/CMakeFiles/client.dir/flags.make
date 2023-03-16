@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/hanseun/Documents/v_oat/./include
+CXX_INCLUDES = -I/home/nate/senior_design/v_oat/./include
 
 CXX_FLAGS = -std=c++17
 
