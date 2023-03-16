@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
     }
     else
     {
+        fprintf(stderr, "got cert\n");
     }
 
     // Get certificate name

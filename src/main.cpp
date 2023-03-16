@@ -130,6 +130,9 @@ void *casting_vote(void *socket_ptr)
 
   ssl = SSL_new(ctx);
 
+  SSL_use_certificate_file(ssl, "cert.pem", SSL_FILETYPE_PEM);
+  SSL_use_PrivateKey_file(ssl, "key.pem", SSL_FILETYPE_PEM);
+
   SSL_set_fd(ssl, new_s);
   int e = SSL_accept(ssl);
 
