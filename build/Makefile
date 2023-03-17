@@ -142,29 +142,29 @@ client/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/build
 .PHONY : client/fast
 
-src/ballot.o: src/ballot.cpp.o
-.PHONY : src/ballot.o
+src/Ballot.o: src/Ballot.cpp.o
+.PHONY : src/Ballot.o
 
 # target to build an object file
-src/ballot.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/ballot.cpp.o
-.PHONY : src/ballot.cpp.o
+src/Ballot.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Ballot.cpp.o
+.PHONY : src/Ballot.cpp.o
 
-src/ballot.i: src/ballot.cpp.i
-.PHONY : src/ballot.i
+src/Ballot.i: src/Ballot.cpp.i
+.PHONY : src/Ballot.i
 
 # target to preprocess a source file
-src/ballot.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/ballot.cpp.i
-.PHONY : src/ballot.cpp.i
+src/Ballot.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Ballot.cpp.i
+.PHONY : src/Ballot.cpp.i
 
-src/ballot.s: src/ballot.cpp.s
-.PHONY : src/ballot.s
+src/Ballot.s: src/Ballot.cpp.s
+.PHONY : src/Ballot.s
 
 # target to generate assembly for a file
-src/ballot.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/ballot.cpp.s
-.PHONY : src/ballot.cpp.s
+src/Ballot.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Ballot.cpp.s
+.PHONY : src/Ballot.cpp.s
 
 src/client.o: src/client.c.o
 .PHONY : src/client.o
@@ -190,77 +190,29 @@ src/client.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.c.s
 .PHONY : src/client.c.s
 
-src/main.o: src/main.cpp.o
-.PHONY : src/main.o
+src/server.o: src/server.cpp.o
+.PHONY : src/server.o
 
 # target to build an object file
-src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
+src/server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.o
+.PHONY : src/server.cpp.o
 
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
-
-# target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
-
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
-
-# target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
-
-src/platform.o: src/platform.cpp.o
-.PHONY : src/platform.o
-
-# target to build an object file
-src/platform.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/platform.cpp.o
-.PHONY : src/platform.cpp.o
-
-src/platform.i: src/platform.cpp.i
-.PHONY : src/platform.i
+src/server.i: src/server.cpp.i
+.PHONY : src/server.i
 
 # target to preprocess a source file
-src/platform.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/platform.cpp.i
-.PHONY : src/platform.cpp.i
+src/server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.i
+.PHONY : src/server.cpp.i
 
-src/platform.s: src/platform.cpp.s
-.PHONY : src/platform.s
-
-# target to generate assembly for a file
-src/platform.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/platform.cpp.s
-.PHONY : src/platform.cpp.s
-
-src/vote.o: src/vote.cpp.o
-.PHONY : src/vote.o
-
-# target to build an object file
-src/vote.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/vote.cpp.o
-.PHONY : src/vote.cpp.o
-
-src/vote.i: src/vote.cpp.i
-.PHONY : src/vote.i
-
-# target to preprocess a source file
-src/vote.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/vote.cpp.i
-.PHONY : src/vote.cpp.i
-
-src/vote.s: src/vote.cpp.s
-.PHONY : src/vote.s
+src/server.s: src/server.cpp.s
+.PHONY : src/server.s
 
 # target to generate assembly for a file
-src/vote.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/vote.cpp.s
-.PHONY : src/vote.cpp.s
+src/server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.s
+.PHONY : src/server.cpp.s
 
 # Help Target
 help:
@@ -272,21 +224,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... client"
 	@echo "... server"
-	@echo "... src/ballot.o"
-	@echo "... src/ballot.i"
-	@echo "... src/ballot.s"
+	@echo "... src/Ballot.o"
+	@echo "... src/Ballot.i"
+	@echo "... src/Ballot.s"
 	@echo "... src/client.o"
 	@echo "... src/client.i"
 	@echo "... src/client.s"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
-	@echo "... src/platform.o"
-	@echo "... src/platform.i"
-	@echo "... src/platform.s"
-	@echo "... src/vote.o"
-	@echo "... src/vote.i"
-	@echo "... src/vote.s"
+	@echo "... src/server.o"
+	@echo "... src/server.i"
+	@echo "... src/server.s"
 .PHONY : help
 
 

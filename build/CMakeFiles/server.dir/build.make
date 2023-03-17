@@ -69,82 +69,50 @@ include CMakeFiles/server.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/server.dir/flags.make
 
-CMakeFiles/server.dir/src/ballot.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/ballot.cpp.o: ../src/ballot.cpp
-CMakeFiles/server.dir/src/ballot.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/ballot.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/ballot.cpp.o -MF CMakeFiles/server.dir/src/ballot.cpp.o.d -o CMakeFiles/server.dir/src/ballot.cpp.o -c /home/hanseun/Documents/v_oat/src/ballot.cpp
+CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/server.cpp.o: ../src/server.cpp
+CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/server.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server.cpp.o -MF CMakeFiles/server.dir/src/server.cpp.o.d -o CMakeFiles/server.dir/src/server.cpp.o -c /home/hanseun/Documents/v_oat/src/server.cpp
 
-CMakeFiles/server.dir/src/ballot.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/ballot.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/ballot.cpp > CMakeFiles/server.dir/src/ballot.cpp.i
+CMakeFiles/server.dir/src/server.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/server.cpp > CMakeFiles/server.dir/src/server.cpp.i
 
-CMakeFiles/server.dir/src/ballot.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/ballot.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/ballot.cpp -o CMakeFiles/server.dir/src/ballot.cpp.s
+CMakeFiles/server.dir/src/server.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/server.cpp -o CMakeFiles/server.dir/src/server.cpp.s
 
-CMakeFiles/server.dir/src/vote.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/vote.cpp.o: ../src/vote.cpp
-CMakeFiles/server.dir/src/vote.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/vote.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/vote.cpp.o -MF CMakeFiles/server.dir/src/vote.cpp.o.d -o CMakeFiles/server.dir/src/vote.cpp.o -c /home/hanseun/Documents/v_oat/src/vote.cpp
+CMakeFiles/server.dir/src/Ballot.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/Ballot.cpp.o: ../src/Ballot.cpp
+CMakeFiles/server.dir/src/Ballot.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/Ballot.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/Ballot.cpp.o -MF CMakeFiles/server.dir/src/Ballot.cpp.o.d -o CMakeFiles/server.dir/src/Ballot.cpp.o -c /home/hanseun/Documents/v_oat/src/Ballot.cpp
 
-CMakeFiles/server.dir/src/vote.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/vote.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/vote.cpp > CMakeFiles/server.dir/src/vote.cpp.i
+CMakeFiles/server.dir/src/Ballot.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/Ballot.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/Ballot.cpp > CMakeFiles/server.dir/src/Ballot.cpp.i
 
-CMakeFiles/server.dir/src/vote.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/vote.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/vote.cpp -o CMakeFiles/server.dir/src/vote.cpp.s
-
-CMakeFiles/server.dir/src/platform.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/platform.cpp.o: ../src/platform.cpp
-CMakeFiles/server.dir/src/platform.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/platform.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/platform.cpp.o -MF CMakeFiles/server.dir/src/platform.cpp.o.d -o CMakeFiles/server.dir/src/platform.cpp.o -c /home/hanseun/Documents/v_oat/src/platform.cpp
-
-CMakeFiles/server.dir/src/platform.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/platform.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/platform.cpp > CMakeFiles/server.dir/src/platform.cpp.i
-
-CMakeFiles/server.dir/src/platform.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/platform.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/platform.cpp -o CMakeFiles/server.dir/src/platform.cpp.s
-
-CMakeFiles/server.dir/src/main.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/main.cpp.o: ../src/main.cpp
-CMakeFiles/server.dir/src/main.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/server.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/main.cpp.o -MF CMakeFiles/server.dir/src/main.cpp.o.d -o CMakeFiles/server.dir/src/main.cpp.o -c /home/hanseun/Documents/v_oat/src/main.cpp
-
-CMakeFiles/server.dir/src/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/main.cpp > CMakeFiles/server.dir/src/main.cpp.i
-
-CMakeFiles/server.dir/src/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/main.cpp -o CMakeFiles/server.dir/src/main.cpp.s
+CMakeFiles/server.dir/src/Ballot.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/Ballot.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/Ballot.cpp -o CMakeFiles/server.dir/src/Ballot.cpp.s
 
 # Object files for target server
 server_OBJECTS = \
-"CMakeFiles/server.dir/src/ballot.cpp.o" \
-"CMakeFiles/server.dir/src/vote.cpp.o" \
-"CMakeFiles/server.dir/src/platform.cpp.o" \
-"CMakeFiles/server.dir/src/main.cpp.o"
+"CMakeFiles/server.dir/src/server.cpp.o" \
+"CMakeFiles/server.dir/src/Ballot.cpp.o"
 
 # External object files for target server
 server_EXTERNAL_OBJECTS =
 
-bin/server: CMakeFiles/server.dir/src/ballot.cpp.o
-bin/server: CMakeFiles/server.dir/src/vote.cpp.o
-bin/server: CMakeFiles/server.dir/src/platform.cpp.o
-bin/server: CMakeFiles/server.dir/src/main.cpp.o
+bin/server: CMakeFiles/server.dir/src/server.cpp.o
+bin/server: CMakeFiles/server.dir/src/Ballot.cpp.o
 bin/server: CMakeFiles/server.dir/build.make
 bin/server: /home/hanseun/Documents/helib_install/helib_pack/lib/libhelib.a
 bin/server: /home/hanseun/Documents/helib_install/helib_pack/lib/libntl.so
 bin/server: /home/hanseun/Documents/helib_install/helib_pack/lib/libgmp.so
 bin/server: CMakeFiles/server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable bin/server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable bin/server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
