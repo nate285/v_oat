@@ -166,29 +166,29 @@ src/Ballot.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Ballot.cpp.s
 .PHONY : src/Ballot.cpp.s
 
-src/client.o: src/client.c.o
+src/client.o: src/client.cpp.o
 .PHONY : src/client.o
 
 # target to build an object file
-src/client.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.c.o
-.PHONY : src/client.c.o
+src/client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.cpp.o
+.PHONY : src/client.cpp.o
 
-src/client.i: src/client.c.i
+src/client.i: src/client.cpp.i
 .PHONY : src/client.i
 
 # target to preprocess a source file
-src/client.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.c.i
-.PHONY : src/client.c.i
+src/client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.cpp.i
+.PHONY : src/client.cpp.i
 
-src/client.s: src/client.c.s
+src/client.s: src/client.cpp.s
 .PHONY : src/client.s
 
 # target to generate assembly for a file
-src/client.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.c.s
-.PHONY : src/client.c.s
+src/client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client.cpp.s
+.PHONY : src/client.cpp.s
 
 src/server.o: src/server.cpp.o
 .PHONY : src/server.o

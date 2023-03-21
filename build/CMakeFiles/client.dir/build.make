@@ -69,28 +69,28 @@ include CMakeFiles/client.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/client.dir/flags.make
 
-CMakeFiles/client.dir/src/client.c.o: CMakeFiles/client.dir/flags.make
-CMakeFiles/client.dir/src/client.c.o: ../src/client.c
-CMakeFiles/client.dir/src/client.c.o: CMakeFiles/client.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/client.dir/src/client.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/client.dir/src/client.c.o -MF CMakeFiles/client.dir/src/client.c.o.d -o CMakeFiles/client.dir/src/client.c.o -c /home/hanseun/Documents/v_oat/src/client.c
+CMakeFiles/client.dir/src/client.cpp.o: CMakeFiles/client.dir/flags.make
+CMakeFiles/client.dir/src/client.cpp.o: ../src/client.cpp
+CMakeFiles/client.dir/src/client.cpp.o: CMakeFiles/client.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/client.dir/src/client.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/client.dir/src/client.cpp.o -MF CMakeFiles/client.dir/src/client.cpp.o.d -o CMakeFiles/client.dir/src/client.cpp.o -c /home/hanseun/Documents/v_oat/src/client.cpp
 
-CMakeFiles/client.dir/src/client.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/client.dir/src/client.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/hanseun/Documents/v_oat/src/client.c > CMakeFiles/client.dir/src/client.c.i
+CMakeFiles/client.dir/src/client.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/client.dir/src/client.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/client.cpp > CMakeFiles/client.dir/src/client.cpp.i
 
-CMakeFiles/client.dir/src/client.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/client.dir/src/client.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/hanseun/Documents/v_oat/src/client.c -o CMakeFiles/client.dir/src/client.c.s
+CMakeFiles/client.dir/src/client.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/client.dir/src/client.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/client.cpp -o CMakeFiles/client.dir/src/client.cpp.s
 
 # Object files for target client
 client_OBJECTS = \
-"CMakeFiles/client.dir/src/client.c.o"
+"CMakeFiles/client.dir/src/client.cpp.o"
 
 # External object files for target client
 client_EXTERNAL_OBJECTS =
 
-bin/client: CMakeFiles/client.dir/src/client.c.o
+bin/client: CMakeFiles/client.dir/src/client.cpp.o
 bin/client: CMakeFiles/client.dir/build.make
 bin/client: /home/hanseun/Documents/helib_install/helib_pack/lib/libhelib.a
 bin/client: /home/hanseun/Documents/helib_install/helib_pack/lib/libntl.so
