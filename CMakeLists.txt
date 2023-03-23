@@ -45,7 +45,7 @@ add_executable(server ./src/server.cpp ./src/Ballot.cpp)
 
 add_executable(client ./src/client.cpp)
 
-target_link_libraries(server helib)
-target_link_libraries(client helib)
+target_link_libraries(server helib ssl crypto)
+target_link_libraries(client helib ssl crypto)
 
 #cmake -Dhelib_DIR=/home/hanseun/Documents/helib_install/helib_pack/share/cmake/helib ../ .
