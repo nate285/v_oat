@@ -135,7 +135,7 @@ void *casting_vote(void *socket_ptr)
         perror("send accept");
         exit(EXIT_FAILURE);
     }
-    sendCandidateInfo(new_s); // send candidate names
+    sendCandidateInfo(ssl); // send candidate names
 
     helib::Ctxt *v_template;
     helib::Ctxt *received;
@@ -152,9 +152,9 @@ void *casting_vote(void *socket_ptr)
         helib::Ctxt vote_template(*public_key);
         public_key->Encrypt(vote_template, ptxt_vote_template);
 
-        int len = sendVoteTemplate(new_s, vote_template);
+        int len = sendVoteTemplate(ssl, vote_template);
 
-        helib::Ctxt received_vote(receiveVote(new_s, len));
+        helib::Ctxt received_vote(receiveVote(ssl, len));
         if (verifyVote(received_vote))
         {
             v_template = &vote_template;
@@ -162,7 +162,7 @@ void *casting_vote(void *socket_ptr)
             break;
         }
         const char *accept = "Invalid Vote. Please try again.";
-        if (send(new_s, accept, strlen(accept) + 1, 0) < 0)
+        if (SSL_write(ssl, accept, strlen(accept) + 1) < 0)
         {
             perror("send accept");
             exit(EXIT_FAILURE);
@@ -177,7 +177,7 @@ void *casting_vote(void *socket_ptr)
     return NULL;
 }
 
-void sendCandidateInfo(int new_s)
+void sendCandidateInfo(SSL *ssl)
 {
     stringstream cand_ss;
     int i;
@@ -190,32 +190,32 @@ void sendCandidateInfo(int new_s)
     string cand_string = cand_ss.str();
     const char *cand = cand_string.c_str();
     size_t len = strlen(cand);
-    if (send(new_s, &len, sizeof(len), 0) < 0)
+    if (SSL_write(ssl, &len, sizeof(len)) < 0)
     {
         perror("send length");
         exit(EXIT_FAILURE);
     }
-    if (send(new_s, cand, strlen(cand), 0) < 0)
+    if (SSL_write(ssl, cand, strlen(cand)) < 0)
     {
         perror("send candidates");
         exit(EXIT_FAILURE);
     }
 }
 
-int sendVoteTemplate(int new_s, helib::Ctxt &vote_template)
+int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
 {
     stringstream vt_stream;
     vote_template.writeToJSON(vt_stream);
     string vt_string = vt_stream.str() + '\0';
     const char *vt_cstr = vt_string.c_str();
     size_t length = strlen(vt_cstr);
-    if (send(new_s, &length, sizeof(length), 0) < 0)
+    if (SSL_write(ssl, &length, sizeof(length)) < 0)
     {
         perror("send vote template length");
         exit(EXIT_FAILURE);
     }
     int len;
-    if ((len = send(new_s, vt_cstr, strlen(vt_cstr), 0)) < 0)
+    if ((len = SSL_write(ssl, vt_cstr, strlen(vt_cstr))) < 0)
     {
         perror("send vote template");
         exit(EXIT_FAILURE);
@@ -223,10 +223,10 @@ int sendVoteTemplate(int new_s, helib::Ctxt &vote_template)
     return len;
 }
 
-helib::Ctxt receiveVote(int new_s, int length)
+helib::Ctxt receiveVote(SSL *ssl, int length)
 {
     char rec_buf[length + 1];
-    if (recv(new_s, rec_buf, length + 1, 0) < 0)
+    if (SSL_read(ssl, rec_buf, length + 1) < 0)
     {
         perror("receive vote");
         exit(EXIT_FAILURE);
