@@ -81,15 +81,6 @@ int main(int argc, char *argv[])
 
     X509 *cert = SSL_get_peer_certificate(ssl);
 
-    if (cert == NULL)
-    {
-        fprintf(stderr, "no cert\n\n\n\n");
-    }
-    else
-    {
-        fprintf(stderr, "got cert\n");
-    }
-
     // Get certificate name
     X509_NAME *certname = X509_get_subject_name(cert);
 
@@ -102,43 +93,37 @@ int main(int argc, char *argv[])
     if ((n = SSL_write(ssl, "hello worldz!", strlen("hello worldz!"))) < 0)
         perror("ERROR writing to socket.");
 
+    size_t buf_size = 200;
+    char *buf;
+    char *recBuf;
+    int ret;
+    int len;
+    int recLen;
+    while (1)
+    {
+        recBuf = (char *)malloc(sizeof(char) * 200);
+        recLen = SSL_read(ssl, recBuf, sizeof(char) * 200);
+        recBuf[recLen] = '\0';
+        if (recLen < 1)
+            break;
+        fputs(recBuf, stdout);
+        fputc('\n', stdout);
+        fflush(stdout);
+
+        buf = (char *)malloc(sizeof(char) * 200);
+        ret = getline(&buf, &buf_size, stdin);
+        len = strlen(buf) + 1;
+        if (ret == 0)
+        {
+            break;
+        }
+        SSL_write(ssl, buf, len);
+        free(buf);
+        free(recBuf);
+    }
+
     SSL_free(ssl);
     close(s);
     X509_free(cert);
     SSL_CTX_free(ctx);
-
-    return EXIT_SUCCESS;
-
-    /*
-        size_t buf_size = 200;
-        char *buf;
-        char *recBuf;
-        int ret;
-        int len;
-        int recLen;
-        while (1)
-        {
-            recBuf = (char *)malloc(sizeof(char) * 200);
-            recLen = recv(s, recBuf, sizeof(char) * 200, 0);
-            recBuf[recLen] = '\0';
-            if (recLen < 1)
-                break;
-            fputs(recBuf, stdout);
-            fputc('\n', stdout);
-            fflush(stdout);
-
-            buf = (char *)malloc(sizeof(char) * 200);
-            ret = getline(&buf, &buf_size, stdin);
-            len = strlen(buf) + 1;
-            if (ret == 0)
-            {
-                break;
-            }
-            send(s, buf, len, 0);
-            free(buf);
-            free(recBuf);
-        }
-
-        close(s);
-        */
 }

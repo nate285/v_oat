@@ -122,17 +122,25 @@ ballot *candidateRegistration(helib::Ctxt dum)
 
 void *casting_vote(void *socket_ptr)
 {
+  // SSL_METHOD *meth;
 
+  // SSL_CTX *ctx;
+  // InitializeSSL(ctx);
+
+  std::cerr << "line 126\n";
   size_t client_len;
   SSL *ssl;
   int new_s = *((int *)socket_ptr);
   X509 *client_cert;
+  std::cerr << "line 132\n";
 
   ssl = SSL_new(ctx);
+  std::cerr << "line 132\n";
 
   SSL_use_certificate_file(ssl, "cert.pem", SSL_FILETYPE_PEM);
   SSL_use_PrivateKey_file(ssl, "key.pem", SSL_FILETYPE_PEM);
 
+  std::cerr << "line 138\n";
   SSL_set_fd(ssl, new_s);
   int e = SSL_accept(ssl);
 
@@ -160,22 +168,18 @@ void *casting_vote(void *socket_ptr)
   {
     fprintf(stderr, "no cert\n");
   }
-
-  int lenn = SSL_read(ssl, buf, sizeof(buf) - 1);
-  buf[lenn] = '\0';
-  fprintf(stderr, "THIS IS THE BUF %s\n", buf);
-  exit(0);
+  std::cerr << "line 165\n";
 
   sprintf(buf, "Enter ID");
   int len = strlen(buf) + 1;
 
-  send(new_s, buf, len, 0);
+  SSL_write(ssl, buf, len);
 
   char recBuf[200];
   char notValid[100];
   sprintf(notValid, "Not a valid candidate, please enter a vote \n");
 
-  len = recv(new_s, recBuf, sizeof(recBuf), 0);
+  len = SSL_read(ssl, recBuf, sizeof(recBuf));
 
   int id = atoi(recBuf);
   std::cout << "ID is " << id << std::endl;
@@ -184,13 +188,13 @@ void *casting_vote(void *socket_ptr)
   sprintf(buf, "Enter who you are voting for\nEnter -1 to see options");
   len = strlen(buf) + 1;
 
-  send(new_s, buf, len, 0);
+  SSL_write(ssl, buf, len);
   while (1)
   {
     vote_val = -1;
     memset(recBuf, 0, sizeof(recBuf));
 
-    len = recv(new_s, recBuf, sizeof(recBuf), 0);
+    len = SSL_read(ssl, recBuf, sizeof(recBuf));
 
     if (recBuf[0] == '\n')
     {
@@ -204,7 +208,7 @@ void *casting_vote(void *socket_ptr)
     if (vote_val > num_candidates - 1 || vote_val < -1)
     {
       len = strlen(notValid) + 1;
-      send(new_s, notValid, len, 0);
+      SSL_write(ssl, notValid, len);
       continue;
     }
     else if (vote_val != -1)
@@ -216,11 +220,14 @@ void *casting_vote(void *socket_ptr)
 
     strcat(candidateBuf, buf);
     len = strlen(candidateBuf) + 1;
-    send(new_s, candidateBuf, len, 0);
+    SSL_write(ssl, candidateBuf, len);
 
     free(candidateBuf);
   }
+  SSL_free(ssl);
   close(new_s);
+  X509_free(client_cert);
+  // SSL_CTX_free(ctx);
 
   std::cout << "They voted for " << vote_val << std::endl;
 
@@ -288,6 +295,7 @@ void handleVoting()
     pthread_t new_thread;
     int *socket_ptr = (int *)malloc(sizeof(int));
     *socket_ptr = new_s;
+    std::cerr << "line 291\n";
     pthread_create(&new_thread, NULL, casting_vote, socket_ptr);
   }
 }
