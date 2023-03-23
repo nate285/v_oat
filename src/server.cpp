@@ -7,6 +7,13 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <openssl/rsa.h>
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
@@ -21,29 +28,124 @@
 
 using namespace std;
 
-helib::Context* context;
-helib::PubKey* public_key;
+#define HOME "./"
+
+#define CERTF HOME "cert.pem"
+
+#define KEYF HOME "key.pem"
+
+#define CHK_NULL(x)  \
+    if ((x) == NULL) \
+    exit(1)
+#define CHK_ERR(err, s) \
+    if ((err) == -1)    \
+    {                   \
+        perror(s);      \
+        exit(1);        \
+    }
+#define CHK_SSL(err)                 \
+    if ((err) == -1)                 \
+    {                                \
+        ERR_print_errors_fp(stderr); \
+        exit(2);                     \
+    }
+
+helib::Context *context;
+helib::PubKey *public_key;
 vector<string> candidates;
-Ballot* ballot;
+Ballot *ballot;
+
+SSL_CTX *ctx;
+const SSL_METHOD *meth;
+
+void InitializeSSL()
+{
+
+    signal(SIGPIPE, SIG_IGN);
+
+    SSL_load_error_strings();
+    OpenSSL_add_ssl_algorithms();
+    meth = TLS_server_method();
+    ctx = SSL_CTX_new(meth);
+    if (!ctx)
+    {
+        ERR_print_errors_fp(stderr);
+        exit(2);
+    }
+
+    if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0)
+    {
+        ERR_print_errors_fp(stderr);
+        exit(3);
+    }
+    if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0)
+    {
+        ERR_print_errors_fp(stderr);
+        exit(4);
+    }
+
+    if (!SSL_CTX_check_private_key(ctx))
+    {
+        fprintf(stderr, "Private key does not match the certificate public key\n");
+        exit(5);
+    }
+}
 
 void *casting_vote(void *socket_ptr)
 {
     int new_s = *((int *)socket_ptr);
+    size_t client_len;
+    SSL *ssl;
+    X509 *client_cert;
 
-    const char* accept = "CONNECTION ACCEPTED\n";
-    if (send(new_s, accept, strlen(accept) + 1, 0) < 0) {
+    ssl = SSL_new(ctx);
+    SSL_use_certificate_file(ssl, "cert.pem", SSL_FILETYPE_PEM);
+    SSL_use_PrivateKey_file(ssl, "key.pem", SSL_FILETYPE_PEM);
+
+    SSL_set_fd(ssl, new_s);
+
+    SSL_accept(ssl);
+
+    client_cert = SSL_get_peer_certificate(ssl);
+    char *strr;
+
+    if (client_cert != NULL)
+    {
+        printf("Client certificate:\n");
+
+        strr = X509_NAME_oneline(X509_get_subject_name(client_cert), 0, 0);
+        CHK_NULL(strr);
+        printf("\t subject: %s\n", strr);
+        OPENSSL_free(strr);
+
+        strr = X509_NAME_oneline(X509_get_issuer_name(client_cert), 0, 0);
+        CHK_NULL(strr);
+        printf("\t issuer: %s\n", strr);
+        OPENSSL_free(strr);
+        X509_free(client_cert);
+    }
+    else
+    {
+        fprintf(stderr, "no cert\n");
+    }
+
+    const char *accept = "CONNECTION ACCEPTED\n";
+    if (SSL_write(ssl, accept, strlen(accept) + 1) < 0)
+    {
         perror("send accept");
         exit(EXIT_FAILURE);
     }
-    sendCandidateInfo(new_s); //send candidate names
+    sendCandidateInfo(new_s); // send candidate names
 
-    helib::Ctxt* v_template;
-    helib::Ctxt* received;
-    while (true) {
+    helib::Ctxt *v_template;
+    helib::Ctxt *received;
+    while (true)
+    {
         helib::Ptxt<helib::BGV> ptxt_vote_template(*context);
-        //TODO: insert random numbers as OTP saltq
-        //right now is just 0~size-1
-        for (long i = 0; i < context->getNSlots(); ++i) {
+        // TODO: insert random numbers as OTP saltq
+        // right now is just 0~size-1
+        for (long i = 0; i < context->getNSlots(); ++i)
+        {
             ptxt_vote_template.at(i) = i;
         }
 
@@ -53,68 +155,79 @@ void *casting_vote(void *socket_ptr)
         int len = sendVoteTemplate(new_s, vote_template);
 
         helib::Ctxt received_vote(receiveVote(new_s, len));
-        if (verifyVote(received_vote)) {
+        if (verifyVote(received_vote))
+        {
             v_template = &vote_template;
             received = &received_vote;
             break;
         }
-        const char* accept = "Invalid Vote. Please try again.";
-        if (send(new_s, accept, strlen(accept) + 1, 0) < 0) {
+        const char *accept = "Invalid Vote. Please try again.";
+        if (send(new_s, accept, strlen(accept) + 1, 0) < 0)
+        {
             perror("send accept");
             exit(EXIT_FAILURE);
         }
     }
 
     helib::Ctxt vote(*received);
-    vote -= *v_template;// TODO: Recrypt if needed
-    
-    ballot->cast(0, vote); //TODO: replace 0 with voter id
+    vote -= *v_template; // TODO: Recrypt if needed
+
+    ballot->cast(0, vote); // TODO: replace 0 with voter id
 
     return NULL;
 }
 
-void sendCandidateInfo(int new_s) {
+void sendCandidateInfo(int new_s)
+{
     stringstream cand_ss;
     int i;
-    for (i = 0; i < candidates.size()-1; ++i) {
-        cand_ss << candidates[i] << "&"; 
+    for (i = 0; i < candidates.size() - 1; ++i)
+    {
+        cand_ss << candidates[i] << "&";
     }
     cand_ss << candidates[i];
     cout << cand_ss.str() << endl;
     string cand_string = cand_ss.str();
-    const char* cand = cand_string.c_str();
+    const char *cand = cand_string.c_str();
     size_t len = strlen(cand);
-    if (send(new_s, &len, sizeof(len), 0) < 0) {
+    if (send(new_s, &len, sizeof(len), 0) < 0)
+    {
         perror("send length");
         exit(EXIT_FAILURE);
     }
-    if (send(new_s, cand, strlen(cand), 0) < 0) {
+    if (send(new_s, cand, strlen(cand), 0) < 0)
+    {
         perror("send candidates");
         exit(EXIT_FAILURE);
     }
 }
 
-int sendVoteTemplate(int new_s, helib::Ctxt& vote_template) {
+int sendVoteTemplate(int new_s, helib::Ctxt &vote_template)
+{
     stringstream vt_stream;
     vote_template.writeToJSON(vt_stream);
     string vt_string = vt_stream.str() + '\0';
-    const char* vt_cstr = vt_string.c_str();
+    const char *vt_cstr = vt_string.c_str();
     size_t length = strlen(vt_cstr);
-    if (send(new_s, &length, sizeof(length), 0) < 0) {
+    if (send(new_s, &length, sizeof(length), 0) < 0)
+    {
         perror("send vote template length");
         exit(EXIT_FAILURE);
     }
     int len;
-    if ((len = send(new_s, vt_cstr, strlen(vt_cstr), 0)) < 0) {
+    if ((len = send(new_s, vt_cstr, strlen(vt_cstr), 0)) < 0)
+    {
         perror("send vote template");
         exit(EXIT_FAILURE);
     }
     return len;
 }
 
-helib::Ctxt receiveVote(int new_s, int length) {
-    char rec_buf[length+1];
-    if (recv(new_s, rec_buf, length+1, 0) < 0) {
+helib::Ctxt receiveVote(int new_s, int length)
+{
+    char rec_buf[length + 1];
+    if (recv(new_s, rec_buf, length + 1, 0) < 0)
+    {
         perror("receive vote");
         exit(EXIT_FAILURE);
     }
@@ -125,12 +238,13 @@ helib::Ctxt receiveVote(int new_s, int length) {
     return deserialized_vote;
 }
 
-bool verifyVote(helib::Ctxt& received_vote) {
+bool verifyVote(helib::Ctxt &received_vote)
+{
     return true;
 }
 
 int main(int argc, char *argv[])
-{   
+{
     /* -----------------------------------------------------------------------*/
     /* INITIALIZATION */
     /* -----------------------------------------------------------------------*/
@@ -156,16 +270,16 @@ int main(int argc, char *argv[])
     unsigned long c = 2;
 
     cout << "---Initialising HE Environment ... ";
-    
+
     /* CONTEXT */
     cout << "\nInitializing the Context ... ";
     context = new helib::Context(helib::ContextBuilder<helib::BGV>()
-                                 .m(m)
-                                 .p(p)
-                                 .r(r)
-                                 .bits(bits)
-                                 .c(c)
-                                 .build());
+                                     .m(m)
+                                     .p(p)
+                                     .r(r)
+                                     .bits(bits)
+                                     .c(c)
+                                     .build());
 
     /* SECRET KEY */
     cout << "\nCreating Secret Key ...";
@@ -203,6 +317,7 @@ int main(int argc, char *argv[])
     /* -----------------------------------------------------------------------*/
     /* OPENING SERVER */
     /* -----------------------------------------------------------------------*/
+    InitializeSSL();
     int sock;
     int port = 8080; // TODO: change port
     if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
@@ -233,46 +348,46 @@ int main(int argc, char *argv[])
 
     int vote_count = 0;
 
-    while (vote_count++ < 5) //done when we reach maximum vote count or when time limit reaches?
+    while (vote_count++ < 5) // done when we reach maximum vote count or when time limit reaches?
     {
         if ((new_s = accept(sock, (struct sockaddr *)&sin, &len)) < 0)
         {
-          perror("simplex-talk:accepct");
-          exit(1);
+            perror("simplex-talk:accepct");
+            exit(1);
         }
 
         pthread_t new_thread;
         pthread_create(&new_thread, NULL, casting_vote, &new_s);
     }
-    //close ballot
+    // close ballot
     ballot->close();
-    //display results
+    // display results
 
-// void Ballot::showResult()
-// {
-//     if (state != Ballot_CLOSED)
-//     {
-//         std::cerr << "Ballot not yet closed" << std::endl;
-//         return;
-//     }
-//     std::cout << "Extracting and Decrypting Result" << std::endl;
-//     helib::Ptxt<helib::BGV> plaintext_result(context);
-//     seckey.Decrypt(plaintext_result, *b);
+    // void Ballot::showResult()
+    // {
+    //     if (state != Ballot_CLOSED)
+    //     {
+    //         std::cerr << "Ballot not yet closed" << std::endl;
+    //         return;
+    //     }
+    //     std::cout << "Extracting and Decrypting Result" << std::endl;
+    //     helib::Ptxt<helib::BGV> plaintext_result(context);
+    //     seckey.Decrypt(plaintext_result, *b);
 
-//     // Convert from ASCII to a string
-//     int win{0};
-//     int cur{0};
-//     std::string string_result;
-//     for (long i{0}; i < plaintext_result.size(); ++i)
-//     {
-//         long num = static_cast<long>(plaintext_result[i]);
-//         if (num > cur)
-//         {
-//             win = i;
-//             cur = num;
-//         }
-//     }
-//     string_result = candidates[win];
-//     std::cout << "\nWinner is: " << string_result << std::endl;
-// }
+    //     // Convert from ASCII to a string
+    //     int win{0};
+    //     int cur{0};
+    //     std::string string_result;
+    //     for (long i{0}; i < plaintext_result.size(); ++i)
+    //     {
+    //         long num = static_cast<long>(plaintext_result[i]);
+    //         if (num > cur)
+    //         {
+    //             win = i;
+    //             cur = num;
+    //         }
+    //     }
+    //     string_result = candidates[win];
+    //     std::cout << "\nWinner is: " << string_result << std::endl;
+    // }
 }

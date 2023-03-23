@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/hanseun/Documents/v_oat/src/Ballot.cpp" "CMakeFiles/server.dir/src/Ballot.cpp.o" "gcc" "CMakeFiles/server.dir/src/Ballot.cpp.o.d"
-  "/home/hanseun/Documents/v_oat/src/server.cpp" "CMakeFiles/server.dir/src/server.cpp.o" "gcc" "CMakeFiles/server.dir/src/server.cpp.o.d"
+  "/home/nate/senior_design/v_oat/src/Ballot.cpp" "CMakeFiles/server.dir/src/Ballot.cpp.o" "gcc" "CMakeFiles/server.dir/src/Ballot.cpp.o.d"
+  "/home/nate/senior_design/v_oat/src/server.cpp" "CMakeFiles/server.dir/src/server.cpp.o" "gcc" "CMakeFiles/server.dir/src/server.cpp.o.d"
   )
 
 # Targets to which this target links.

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/hanseun/Documents/v_oat
+CMAKE_SOURCE_DIR = /home/nate/senior_design/v_oat
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/hanseun/Documents/v_oat/build
+CMAKE_BINARY_DIR = /home/nate/senior_design/v_oat/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/server.dir/depend.make
@@ -72,30 +72,30 @@ include CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/server.cpp.o: ../src/server.cpp
 CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/server.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server.cpp.o -MF CMakeFiles/server.dir/src/server.cpp.o.d -o CMakeFiles/server.dir/src/server.cpp.o -c /home/hanseun/Documents/v_oat/src/server.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/server.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server.cpp.o -MF CMakeFiles/server.dir/src/server.cpp.o.d -o CMakeFiles/server.dir/src/server.cpp.o -c /home/nate/senior_design/v_oat/src/server.cpp
 
 CMakeFiles/server.dir/src/server.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/server.cpp > CMakeFiles/server.dir/src/server.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nate/senior_design/v_oat/src/server.cpp > CMakeFiles/server.dir/src/server.cpp.i
 
 CMakeFiles/server.dir/src/server.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/server.cpp -o CMakeFiles/server.dir/src/server.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nate/senior_design/v_oat/src/server.cpp -o CMakeFiles/server.dir/src/server.cpp.s
 
 CMakeFiles/server.dir/src/Ballot.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/Ballot.cpp.o: ../src/Ballot.cpp
 CMakeFiles/server.dir/src/Ballot.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/Ballot.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/Ballot.cpp.o -MF CMakeFiles/server.dir/src/Ballot.cpp.o.d -o CMakeFiles/server.dir/src/Ballot.cpp.o -c /home/hanseun/Documents/v_oat/src/Ballot.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/Ballot.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/Ballot.cpp.o -MF CMakeFiles/server.dir/src/Ballot.cpp.o.d -o CMakeFiles/server.dir/src/Ballot.cpp.o -c /home/nate/senior_design/v_oat/src/Ballot.cpp
 
 CMakeFiles/server.dir/src/Ballot.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/Ballot.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hanseun/Documents/v_oat/src/Ballot.cpp > CMakeFiles/server.dir/src/Ballot.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nate/senior_design/v_oat/src/Ballot.cpp > CMakeFiles/server.dir/src/Ballot.cpp.i
 
 CMakeFiles/server.dir/src/Ballot.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/Ballot.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hanseun/Documents/v_oat/src/Ballot.cpp -o CMakeFiles/server.dir/src/Ballot.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nate/senior_design/v_oat/src/Ballot.cpp -o CMakeFiles/server.dir/src/Ballot.cpp.s
 
 # Object files for target server
 server_OBJECTS = \
@@ -108,11 +108,11 @@ server_EXTERNAL_OBJECTS =
 bin/server: CMakeFiles/server.dir/src/server.cpp.o
 bin/server: CMakeFiles/server.dir/src/Ballot.cpp.o
 bin/server: CMakeFiles/server.dir/build.make
-bin/server: /home/hanseun/Documents/helib_install/helib_pack/lib/libhelib.a
-bin/server: /home/hanseun/Documents/helib_install/helib_pack/lib/libntl.so
-bin/server: /home/hanseun/Documents/helib_install/helib_pack/lib/libgmp.so
+bin/server: /usr/local/helib_pack/lib/libhelib.a
+bin/server: /usr/local/helib_pack/lib/libntl.so
+bin/server: /usr/local/helib_pack/lib/libgmp.so
 bin/server: CMakeFiles/server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hanseun/Documents/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable bin/server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nate/senior_design/v_oat/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable bin/server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -124,6 +124,6 @@ CMakeFiles/server.dir/clean:
 .PHONY : CMakeFiles/server.dir/clean
 
 CMakeFiles/server.dir/depend:
-	cd /home/hanseun/Documents/v_oat/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/hanseun/Documents/v_oat /home/hanseun/Documents/v_oat /home/hanseun/Documents/v_oat/build /home/hanseun/Documents/v_oat/build /home/hanseun/Documents/v_oat/build/CMakeFiles/server.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/nate/senior_design/v_oat/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/nate/senior_design/v_oat /home/nate/senior_design/v_oat /home/nate/senior_design/v_oat/build /home/nate/senior_design/v_oat/build /home/nate/senior_design/v_oat/build/CMakeFiles/server.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/server.dir/depend
 
