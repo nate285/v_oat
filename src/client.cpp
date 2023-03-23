@@ -9,6 +9,8 @@
 
 #include <helib/helib.h>
 
+std::vector<std::string> candidates;
+
 int main(int argc, char *argv[])
 {
     char *host_addr = argv[1];
@@ -52,22 +54,33 @@ int main(int argc, char *argv[])
 
     /* Receive Candidates */
     fprintf(stdout, "Candidates\n");
-    const char* done = "INFORMATION_DONE";
-    while (1) {
-        char* cand = calloc(200, 1);
-        recv(s, cand, 200, 0);
-        if (strcmp(cand, done) == 0) {
-            free(cand);
-            break;
-        }
-        fputs(cand, stdout);
-        fputs("\n", stdout);
-        fflush(stdout);
+    size_t cand_len;
+    if (recv(s, &cand_len, sizeof(size_t), 0) < 0) {
+        perror("recv cand_len");
+        exit(EXIT_FAILURE);
     }
+    char cands[cand_len+1] = "";
+    if (recv(s, cands, cand_len+1, 0) < 0) {
+        perror("recv cand_len");
+        exit(EXIT_FAILURE);
+    }
+
+    char *token;
+    token = strtok(cands, "&");
+    do
+    {
+        std::string candid(token);
+        candidates.emplace_back(candid);
+    } while (token = strtok(NULL, "&"));
+    //TODO: Print candidates function
+    for (int i = 0; i < candidates.size(); ++i) {
+        std::cout << i << ") " << candidates[i] << std::endl;
+    }
+
     size_t len;
     recv(s, &len, sizeof(size_t), 0);
     fprintf(stdout, "Received len: %ld\n", len);
-    char json[len+1];
+    char json[len+1] = "";
     recv(s, json, len+1, 0);
     fputs(json, stdout);
     fflush(stdout);

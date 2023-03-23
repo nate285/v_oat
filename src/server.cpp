@@ -74,17 +74,21 @@ void *casting_vote(void *socket_ptr)
 }
 
 void sendCandidateInfo(int new_s) {
-    for (auto const &candidate: candidates) {
-        string cand_string = candidate + '\0';
-        const char* cand = cand_string.c_str();
-        cout << cand << endl;
-        if (send(new_s, cand, strlen(cand), 0) < 0) {
-            perror("send candidates");
-            exit(EXIT_FAILURE);
-        }
+    stringstream cand_ss;
+    int i;
+    for (i = 0; i < candidates.size()-1; ++i) {
+        cand_ss << candidates[i] << "&"; 
     }
-    const char* done = "INFORMATION_DONE";
-    if (send(new_s, done, strlen(done)+1, 0) < 0) {
+    cand_ss << candidates[i];
+    cout << cand_ss.str() << endl;
+    string cand_string = cand_ss.str();
+    const char* cand = cand_string.c_str();
+    size_t len = strlen(cand);
+    if (send(new_s, &len, sizeof(len), 0) < 0) {
+        perror("send length");
+        exit(EXIT_FAILURE);
+    }
+    if (send(new_s, cand, strlen(cand), 0) < 0) {
         perror("send candidates");
         exit(EXIT_FAILURE);
     }
