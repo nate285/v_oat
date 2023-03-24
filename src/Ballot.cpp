@@ -45,3 +45,31 @@ void Ballot::close()
 {
     state = Ballot_CLOSED;
 }
+
+void Ballot::showResult(helib::Context* context, helib::SecKey seckey)
+{
+    if (state != Ballot_CLOSED)
+    {
+        std::cerr << "Ballot not yet closed" << std::endl;
+        return;
+    }
+    std::cout << "Extracting and Decrypting Result" << std::endl;
+    helib::Ptxt<helib::BGV> plaintext_result(*context);
+    seckey.Decrypt(plaintext_result, b);
+
+    // Convert from ASCII to a string
+    int win{0};
+    int cur{0};
+    std::string string_result;
+    for (long i{0}; i < plaintext_result.size(); ++i)
+    {
+        long num = static_cast<long>(plaintext_result[i]);
+        if (num > cur)
+        {
+            win = i;
+            cur = num;
+        }
+    }
+    string_result = candidates[win];
+    std::cout << "\nWinner is: " << string_result << std::endl;
+}

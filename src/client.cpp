@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <string>
+#include <sstream>
 
 #include <sys/socket.h>
 #include <netinet/ip.h>
@@ -87,7 +89,7 @@ int main(int argc, char *argv[])
     X509 *cert = SSL_get_peer_certificate(ssl);
 
     // Get certificate name
-    X509_NAME *certname = X509_get_subject_name(cert);
+    // X509_NAME *certname = X509_get_subject_name(cert);
 
     // Print the TLS Certificate's Subject
     // X509_NAME_print_ex(outbio, certname, 0, 0);
@@ -130,23 +132,80 @@ int main(int argc, char *argv[])
         std::cout << i << ") " << candidates[i] << std::endl;
     }
 
-    size_t len;
-    if (SSL_read(ssl, &len, sizeof(size_t)) <= 0) {
-        perror("SSL_read len ciph");
+    /* RECEIVE HELIB CONTEXT*/
+    size_t len_context;
+    if (SSL_read(ssl, &len_context, sizeof(size_t)) <= 0) {
+        perror("SSL_read len context");
         exit(EXIT_FAILURE);
     }
-    fprintf(stdout, "Received len: %ld\n", len);
-    char json[len+1] = "";
-    if (SSL_read(ssl, json, len+1) <= 0) {
+    fprintf(stdout, "Received len: %ld\n", len_context);
+    char *json_context = (char*) calloc(len_context+1,1);
+    if (SSL_read(ssl, json_context, len_context+1) <= 0) {
+        perror("SSL_read context");
+        exit(EXIT_FAILURE);
+    }
+    // fprintf(stdout, "%s", json_context);
+    std::stringstream context_stream;
+    context_stream << json_context;
+    helib::Context context = helib::Context::readFrom(context_stream);
+    free(json_context);
+
+    /* RECEIVE HELIB PUBKEY*/
+    size_t len_pubkey;
+    if (SSL_read(ssl, &len_pubkey, sizeof(size_t)) <= 0) {
+        perror("SSL_read len pubkey");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(stdout, "Received len: %ld\n", len_pubkey);
+    char *json_pubkey = (char*) calloc(len_pubkey+1,1);
+    if (SSL_read(ssl, json_pubkey, len_pubkey+1) <= 0) {
         perror("SSL_read ciph");
         exit(EXIT_FAILURE);
     }
-    fprintf(stdout, "%s", json);
+    // fprintf(stdout, "%s", json_pubkey);
+    std::stringstream pubkey_stream;
+    pubkey_stream << json_pubkey;
+    helib::PubKey pubkey = helib::PubKey::readFrom(pubkey_stream, context);
+    free(json_pubkey);
 
-    const char* rec = "RECEIVED";
-    if (SSL_write(ssl, rec, strlen(rec)) < 0) {
-        perror("SSL_write received");
-        close(s);
+    /* RECEIVE VOTE TEMPLATE */
+    size_t len_template;
+    if (SSL_read(ssl, &len_template, sizeof(size_t)) <= 0) {
+        perror("SSL_read len ciph");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(stdout, "Received len: %ld\n", len_template);
+    char *json_template = (char*) calloc(len_template+1,1);
+    if (SSL_read(ssl, json_template, len_template+1) <= 0) {
+        perror("SSL_read ciph");
+        exit(EXIT_FAILURE);
+    }
+    // fprintf(stdout, "%s", json_template);
+    std::stringstream template_stream;
+    template_stream << json_template;
+    helib::Ctxt vote_template = helib::Ctxt::readFrom(template_stream, pubkey);
+    free(json_template);
+
+    int nslots = context.getNSlots();
+    helib::Ptxt<helib::BGV> vote(context);
+    vote.at(1) = 1;
+
+    vote_template += vote;
+
+    std::stringstream vote_stream;
+    vote_template.writeToJSON(vote_stream);
+    std::string vote_string = vote_stream.str() + '\0';
+    const char *vote_cstr = vote_string.c_str();
+    // size_t vote_length = strlen(vote_cstr);
+    // if (SSL_write(ssl, &vote_length, sizeof(vote_length)) < 0)
+    // {
+    //     perror("send vote length");
+    //     exit(EXIT_FAILURE);
+    // }
+    if (SSL_write(ssl, vote_cstr, strlen(vote_cstr)) < 0)
+    {
+        perror("send vote");
+        exit(EXIT_FAILURE);
     }
 
     SSL_free(ssl);

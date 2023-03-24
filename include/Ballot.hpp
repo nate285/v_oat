@@ -43,7 +43,7 @@ public:
     // helib::Ctxt create_vote_template();
     // helib::PubKey getPubKey();
 
-    // void showResult(); // display results
+    void showResult(helib::Context*, helib::SecKey); // display results
 };
 
 #endif

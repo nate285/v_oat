@@ -12,3 +12,4 @@ void sendCandidateInfo(SSL *ssl);
 int sendVoteTemplate(SSL *ssl, helib::Ctxt &);
 helib::Ctxt receiveVote(SSL *ssl, int);
 bool verifyVote(helib::Ctxt &);
+void showResult();
