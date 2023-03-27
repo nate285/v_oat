@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     helib::Context context = helib::Context::readFrom(context_stream);
     free(json_context);
 
-    fprintf(stderr, "making it to 162\n\n");
+    std::cout << "HERE" <<std::endl;
     /* RECEIVE HELIB PUBKEY*/
     size_t len_pubkey;
     if (SSL_read(ssl, &len_pubkey, sizeof(size_t)) <= 0)

@@ -136,6 +136,8 @@ void *casting_vote(void *socket_ptr)
         exit(EXIT_FAILURE);
     }
     sendCandidateInfo(ssl); // send candidate names
+    sendContext(ssl);
+    sendPubKey(ssl);
 
     helib::Ctxt *v_template;
     helib::Ctxt *received;
@@ -202,6 +204,48 @@ void sendCandidateInfo(SSL *ssl)
     }
 }
 
+int sendContext(SSL *ssl) {
+    stringstream context_stream;
+    context->writeToJSON(context_stream);
+    string context_string = context_stream.str() + '\0';
+    const char* context_cstr = context_string.c_str();
+    size_t length = strlen(context_cstr);
+    fprintf(stdout, "Context length is %ld\n", length);
+    if (SSL_write(ssl, &length, sizeof(length)) < 0)
+    {
+        perror("send context length");
+        exit(EXIT_FAILURE);
+    }
+    // fprintf(stdout, "The vt_cstr is \n%s\n", vt_cstr);
+    if (SSL_write(ssl, context_cstr, strlen(context_cstr)) < 0)
+    {
+        perror("send context");
+        exit(EXIT_FAILURE);
+    }
+    return 1;
+}
+
+int sendPubKey(SSL *ssl) {
+    stringstream pubkey_stream;
+    public_key->writeToJSON(pubkey_stream);
+    string pubkey_string = pubkey_stream.str() + '\0';
+    const char* pubkey_cstr = pubkey_string.c_str();
+    size_t length = strlen(pubkey_cstr);
+    fprintf(stdout, "Public Key length is %ld\n", length);
+    if (SSL_write(ssl, &length, sizeof(length)) < 0)
+    {
+        perror("send pubkey length");
+        exit(EXIT_FAILURE);
+    }
+    // fprintf(stdout, "The vt_cstr is \n%s\n", vt_cstr);
+    if (SSL_write(ssl, pubkey_cstr, strlen(pubkey_cstr)) < 0)
+    {
+        perror("send Public Key");
+        exit(EXIT_FAILURE);
+    }
+    return 1;
+}
+
 int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
 {
     stringstream vt_stream;
@@ -219,7 +263,7 @@ int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
     //  std::cerr << "\n The string stream is \n"
     //        << vt_string << "\n";
 
-    fprintf(stderr, "The vt_cstr is \n%s\n", vt_cstr);
+    // fprintf(stderr, "The vt_cstr is \n%s\n", vt_cstr);
     if ((len = SSL_write(ssl, vt_cstr, strlen(vt_cstr))) < 0)
     {
         perror("send vote template");
