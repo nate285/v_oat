@@ -22,7 +22,7 @@ std::vector<std::string> candidates;
 
 int main(int argc, char *argv[])
 {
-     // Load algorithms and strings needed by OpenSSL
+    // Load algorithms and strings needed by OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
     SSL_load_error_strings();
@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
         close(s);
         exit(1);
     }
-    if (SSL_set_fd(ssl, s) == 0) {
+    if (SSL_set_fd(ssl, s) == 0)
+    {
         perror("SSL_set_fd");
         exit(EXIT_FAILURE);
     }
@@ -95,13 +96,15 @@ int main(int argc, char *argv[])
     // X509_NAME_print_ex(outbio, certname, 0, 0);
 
     /* Check if connection is accepted */
-    const char* accept = "CONNECTION ACCEPTED\n"; //for user authentication
+    const char *accept = "CONNECTION ACCEPTED\n"; // for user authentication
     char receive[200];
-    if (SSL_read(ssl, receive, 200) <= 0) {
+    if (SSL_read(ssl, receive, 200) <= 0)
+    {
         perror("SSL_read connection accepted");
         exit(EXIT_FAILURE);
     }
-    if (strcmp(accept, receive) != 0) {
+    if (strcmp(accept, receive) != 0)
+    {
         fprintf(stdout, "Not Accepted");
         close(s);
     }
@@ -110,12 +113,14 @@ int main(int argc, char *argv[])
     /* Receive Candidates */
     fprintf(stdout, "Candidates\n");
     size_t cand_len;
-    if (SSL_read(ssl, &cand_len, sizeof(size_t)) <= 0) {
+    if (SSL_read(ssl, &cand_len, sizeof(size_t)) <= 0)
+    {
         perror("SSL_read cand_len");
         exit(EXIT_FAILURE);
     }
-    char cands[cand_len+1] = "";
-    if (SSL_read(ssl, cands, cand_len+1) <= 0) {
+    char cands[cand_len + 1] = "";
+    if (SSL_read(ssl, cands, cand_len + 1) <= 0)
+    {
         perror("SSL_read candidates");
         exit(EXIT_FAILURE);
     }
@@ -127,38 +132,47 @@ int main(int argc, char *argv[])
         std::string candid(token);
         candidates.emplace_back(candid);
     } while (token = strtok(NULL, "&"));
-    //TODO: Print candidates function
-    for (int i = 0; i < candidates.size(); ++i) {
+    // TODO: Print candidates function
+    for (int i = 0; i < candidates.size(); ++i)
+    {
         std::cout << i << ") " << candidates[i] << std::endl;
     }
 
     /* RECEIVE HELIB CONTEXT*/
     size_t len_context;
-    if (SSL_read(ssl, &len_context, sizeof(size_t)) <= 0) {
+    if (SSL_read(ssl, &len_context, sizeof(size_t)) <= 0)
+    {
         perror("SSL_read len context");
         exit(EXIT_FAILURE);
     }
     fprintf(stdout, "Received len: %ld\n", len_context);
-    char *json_context = (char*) calloc(len_context+1,1);
-    if (SSL_read(ssl, json_context, len_context+1) <= 0) {
+    char *json_context = (char *)calloc((len_context + 1) * sizeof(char), 1);
+    if (SSL_read(ssl, json_context, (len_context + 1) * 2) <= 0)
+    {
         perror("SSL_read context");
         exit(EXIT_FAILURE);
     }
     // fprintf(stdout, "%s", json_context);
     std::stringstream context_stream;
     context_stream << json_context;
+    std::cerr << "\n The stream on this side is \n"
+              << json_context << "\n\n\n\n ";
     helib::Context context = helib::Context::readFrom(context_stream);
     free(json_context);
 
+    fprintf(stderr, "making it to 162\n\n");
     /* RECEIVE HELIB PUBKEY*/
     size_t len_pubkey;
-    if (SSL_read(ssl, &len_pubkey, sizeof(size_t)) <= 0) {
+    if (SSL_read(ssl, &len_pubkey, sizeof(size_t)) <= 0)
+    {
         perror("SSL_read len pubkey");
         exit(EXIT_FAILURE);
     }
+    fprintf(stderr, "making it to 170\n\n");
     fprintf(stdout, "Received len: %ld\n", len_pubkey);
-    char *json_pubkey = (char*) calloc(len_pubkey+1,1);
-    if (SSL_read(ssl, json_pubkey, len_pubkey+1) <= 0) {
+    char *json_pubkey = (char *)calloc(len_pubkey + 1, 1);
+    if (SSL_read(ssl, json_pubkey, len_pubkey + 1) <= 0)
+    {
         perror("SSL_read ciph");
         exit(EXIT_FAILURE);
     }
@@ -170,13 +184,15 @@ int main(int argc, char *argv[])
 
     /* RECEIVE VOTE TEMPLATE */
     size_t len_template;
-    if (SSL_read(ssl, &len_template, sizeof(size_t)) <= 0) {
+    if (SSL_read(ssl, &len_template, sizeof(size_t)) <= 0)
+    {
         perror("SSL_read len ciph");
         exit(EXIT_FAILURE);
     }
     fprintf(stdout, "Received len: %ld\n", len_template);
-    char *json_template = (char*) calloc(len_template+1,1);
-    if (SSL_read(ssl, json_template, len_template+1) <= 0) {
+    char *json_template = (char *)calloc(len_template + 1, 1);
+    if (SSL_read(ssl, json_template, len_template + 1) <= 0)
+    {
         perror("SSL_read ciph");
         exit(EXIT_FAILURE);
     }

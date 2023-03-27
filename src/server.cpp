@@ -209,17 +209,23 @@ int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
     string vt_string = vt_stream.str() + '\0';
     const char *vt_cstr = vt_string.c_str();
     size_t length = strlen(vt_cstr);
+    fprintf(stderr, "The vote length is %ld\n", length);
     if (SSL_write(ssl, &length, sizeof(length)) < 0)
     {
         perror("send vote template length");
         exit(EXIT_FAILURE);
     }
     int len;
+    //  std::cerr << "\n The string stream is \n"
+    //        << vt_string << "\n";
+
+    fprintf(stderr, "The vt_cstr is \n%s\n", vt_cstr);
     if ((len = SSL_write(ssl, vt_cstr, strlen(vt_cstr))) < 0)
     {
         perror("send vote template");
         exit(EXIT_FAILURE);
     }
+
     return len;
 }
 
@@ -348,7 +354,7 @@ int main(int argc, char *argv[])
 
     int vote_count = 0;
 
-    while (vote_count++ < 1) // done when we reach maximum vote count or when time limit reaches?
+    while (1) // done when we reach maximum vote count or when time limit reaches?
     {
         if ((new_s = accept(sock, (struct sockaddr *)&sin, &len)) < 0)
         {
