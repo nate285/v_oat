@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +24,7 @@ int s;
 ballot *bal;
 helib::Ctxt *dumdum;
 std::vector<vote *> voters;
+std::map<int, std::string> registered_ids;
 helib::Context *ctxx;
 helib::PubKey *pkey;
 
@@ -55,6 +57,34 @@ ballot *candidateRegistration(helib::Ctxt dum)
   return bal;
 }
 
+// void *getting_registered_users()
+// {
+//   std::ifstream data("test_users.csv");
+
+//   if (!data) {
+//         std::cout << "Unable to users db";
+//         // exit(1); // terminate with error
+//     }
+
+//   std::string line;
+//   std::cout << "Starting Aisha's code\n";
+//   while(std::getline(data,line))
+//   {
+//       std::stringstream  lineStream(line);
+//       std::string id;
+//       std::string pw;
+//       std::string hasVoted;
+//       int count = 0;
+//       while(std::getline(lineStream,id,',') && std::getline(lineStream,pw,',') && std::getline(lineStream,hasVoted,','))
+//       {
+//           registered_ids[stoi(id)] = pw;
+//           std::cout << id << " " << pw << "\n";
+//           count++;
+//       }
+//   }
+//   return NULL;
+// }
+
 void *casting_vote(void *socket_ptr)
 {
   int new_s = *((int *)socket_ptr);
@@ -74,6 +104,22 @@ void *casting_vote(void *socket_ptr)
 
   int id = atoi(recBuf);
   std::cout << "ID is " << id << std::endl;
+
+  // // check that id is registered
+  // if(registered_ids[id] == NULL) {
+  //   // show error 
+  //   std::cout << "Not a registered ID";
+  //   exit(1);
+  // }
+
+  // have user enter password
+
+  // check that password matches the one in DB
+    // if it doesn't, show error and exit function
+
+  // check that user hasn't voted
+     // if they have, show error and exit function
+
   int vote_val;
   char *candidateBuf;
   sprintf(buf, "Enter who you are voting for\nEnter -1 to see options");
@@ -107,6 +153,8 @@ void *casting_vote(void *socket_ptr)
       break;
     }
 
+    // set ID in DB to hasVoted
+
     candidateBuf = bal->showCandidateInfo();
 
     strcat(candidateBuf, buf);
@@ -117,6 +165,7 @@ void *casting_vote(void *socket_ptr)
   }
   close(new_s);
 
+  // mark that [id] has voted on ballot [id]
   std::cout << "They voted for " << vote_val << std::endl;
 
   vote *v = new vote(id, id + 1, *dumdum);
@@ -135,6 +184,7 @@ void *casting_vote(void *socket_ptr)
 
 void handleVoting()
 {
+  std::cout << "Here";
   int port = 8080;
   if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0)
   {
@@ -196,6 +246,7 @@ int main(int argc, char *argv[])
   unsigned long nthreads = 1;
   bool debug = false;
 
+  //getting_registered_users();
   helib::ArgMap amap;
   amap.arg("m", m, "Cyclotomic polynomial ring");
   amap.arg("p", p, "Plaintext prime modulus");
