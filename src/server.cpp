@@ -28,6 +28,8 @@
 
 using namespace std;
 
+#define MAX_LENGTH 16000
+
 #define HOME "./"
 
 #define CERTF HOME "cert.pem"
@@ -52,11 +54,25 @@ using namespace std;
 
 helib::Context *context;
 helib::PubKey *public_key;
+helib::SecKey *secret_key;
 vector<string> candidates;
 Ballot *ballot;
+int sock;
+int num_candidates;
+
+/* HELIB INITIALIZATION */
+unsigned long p = 131;
+unsigned long m = 130;
+unsigned long r = 1;
+unsigned long bits = 1000;
+unsigned long c = 2;
 
 SSL_CTX *ctx;
 const SSL_METHOD *meth;
+
+void sigStpHandler(int signum) {
+  close(sock);
+}
 
 void InitializeSSL()
 {
@@ -136,11 +152,15 @@ void *casting_vote(void *socket_ptr)
         exit(EXIT_FAILURE);
     }
     sendCandidateInfo(ssl); // send candidate names
+    const char candidate_success[27] = "CANDIDATE RECIEVE SUCCESS\n";
+    if (!verify(ssl, candidate_success, 27)) exit(EXIT_FAILURE);
     sendContext(ssl);
+    const char context_success[25] = "CONTEXT RECIEVE SUCCESS\n";
+    if (!verify(ssl, context_success, 25)) exit(EXIT_FAILURE);
     sendPubKey(ssl);
+    const char pubkey_success[24] = "PUBKEY RECIEVE SUCCESS\n";
+    if (!verify(ssl, pubkey_success, 24)) exit(EXIT_FAILURE);
 
-    helib::Ctxt *v_template;
-    helib::Ctxt *received;
     while (true)
     {
         helib::Ptxt<helib::BGV> ptxt_vote_template(*context);
@@ -157,10 +177,20 @@ void *casting_vote(void *socket_ptr)
         int len = sendVoteTemplate(ssl, vote_template);
 
         helib::Ctxt received_vote(receiveVote(ssl, len));
-        if (verifyVote(received_vote))
+        if (verifyVote(received_vote, vote_template))
         {
-            v_template = &vote_template;
-            received = &received_vote;
+            cout << "CASTING...." << endl;
+            helib::Ctxt vote(received_vote);
+            vote -= vote_template; // TODO: Recrypt if needed
+
+            ballot->cast(0, vote); // TODO: replace 0 with voter id
+            cout << "CASTING COMPLETE" << endl;
+            const char *vote_casted = "Vote Valid and accepted\n";
+            if (SSL_write(ssl, vote_casted, strlen(vote_casted) + 1) < 0)
+            {
+                perror("send vote_valid");
+                exit(EXIT_FAILURE);
+            }
             break;
         }
         const char *accept = "Invalid Vote. Please try again.";
@@ -171,12 +201,19 @@ void *casting_vote(void *socket_ptr)
         }
     }
 
-    helib::Ctxt vote(*received);
-    vote -= *v_template; // TODO: Recrypt if needed
+    pthread_exit(NULL);
+}
 
-    ballot->cast(0, vote); // TODO: replace 0 with voter id
-
-    return NULL;
+bool verify(SSL *ssl, const char* msg, int len) {
+    std::cout << "verify: " << msg << std::endl;
+    char receive[len]{0};
+    if (SSL_read(ssl, receive, len) <= 0)
+    {
+        perror("SSL_read verify");
+        exit(EXIT_FAILURE);
+    }
+    // std::cout << receive << endl;
+    return strcmp(msg, receive) == 0;
 }
 
 void sendCandidateInfo(SSL *ssl)
@@ -207,17 +244,10 @@ void sendCandidateInfo(SSL *ssl)
 int sendContext(SSL *ssl) {
     stringstream context_stream;
     context->writeToJSON(context_stream);
-    string context_string = context_stream.str() + '\0';
+    string context_string = context_stream.str();
     const char* context_cstr = context_string.c_str();
-    size_t length = strlen(context_cstr);
-    fprintf(stdout, "Context length is %ld\n", length);
-    if (SSL_write(ssl, &length, sizeof(length)) < 0)
-    {
-        perror("send context length");
-        exit(EXIT_FAILURE);
-    }
-    // fprintf(stdout, "The vt_cstr is \n%s\n", vt_cstr);
-    if (SSL_write(ssl, context_cstr, strlen(context_cstr)) < 0)
+    size_t length = context_string.length();
+    if (SSL_write(ssl, context_cstr, length) < 0)
     {
         perror("send context");
         exit(EXIT_FAILURE);
@@ -228,20 +258,21 @@ int sendContext(SSL *ssl) {
 int sendPubKey(SSL *ssl) {
     stringstream pubkey_stream;
     public_key->writeToJSON(pubkey_stream);
-    string pubkey_string = pubkey_stream.str() + '\0';
+    string pubkey_string = pubkey_stream.str();
     const char* pubkey_cstr = pubkey_string.c_str();
-    size_t length = strlen(pubkey_cstr);
-    fprintf(stdout, "Public Key length is %ld\n", length);
-    if (SSL_write(ssl, &length, sizeof(length)) < 0)
-    {
-        perror("send pubkey length");
-        exit(EXIT_FAILURE);
-    }
-    // fprintf(stdout, "The vt_cstr is \n%s\n", vt_cstr);
-    if (SSL_write(ssl, pubkey_cstr, strlen(pubkey_cstr)) < 0)
-    {
-        perror("send Public Key");
-        exit(EXIT_FAILURE);
+    size_t length = pubkey_string.length();
+    int wrote = 0;
+    char pubkey_buf[MAX_LENGTH+1]{0};
+    // int counter = 1;
+    while (wrote < length) {
+        // std::cout << counter++ << ": ";
+        strncpy(pubkey_buf, &pubkey_cstr[wrote], MAX_LENGTH);
+        if (SSL_write(ssl, pubkey_buf, strlen(pubkey_buf) + 1) < 0) {
+            perror("send Public Key");
+            exit(EXIT_FAILURE);
+        }
+        // cout << strlen(pubkey_buf) << endl;
+        wrote += MAX_LENGTH;
     }
     return 1;
 }
@@ -250,57 +281,95 @@ int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
 {
     stringstream vt_stream;
     vote_template.writeToJSON(vt_stream);
-    string vt_string = vt_stream.str() + '\0';
+    string vt_string = vt_stream.str();
     const char *vt_cstr = vt_string.c_str();
-    size_t length = strlen(vt_cstr);
-    fprintf(stderr, "The vote length is %ld\n", length);
-    if (SSL_write(ssl, &length, sizeof(length)) < 0)
-    {
-        perror("send vote template length");
-        exit(EXIT_FAILURE);
-    }
-    int len;
-    //  std::cerr << "\n The string stream is \n"
-    //        << vt_string << "\n";
-
-    // fprintf(stderr, "The vt_cstr is \n%s\n", vt_cstr);
-    if ((len = SSL_write(ssl, vt_cstr, strlen(vt_cstr))) < 0)
-    {
-        perror("send vote template");
-        exit(EXIT_FAILURE);
+    size_t length = vt_string.length();
+    int wrote = 0;
+    char vt_buf[MAX_LENGTH+1]{0};
+    while (wrote < length) {
+        strncpy(vt_buf, &vt_cstr[wrote], MAX_LENGTH);
+        if (SSL_write(ssl, vt_buf, strlen(vt_buf) + 1) < 0) {
+            perror("send Public Key");
+            exit(EXIT_FAILURE);
+        }
+        // cout << strlen(vt_buf) << endl;
+        wrote += MAX_LENGTH;
     }
 
-    return len;
+    return length;
 }
 
 helib::Ctxt receiveVote(SSL *ssl, int length)
 {
-    char rec_buf[length + 1];
-    if (SSL_read(ssl, rec_buf, length + 1) < 0)
-    {
-        perror("receive vote");
-        exit(EXIT_FAILURE);
+    int data_read = 0;
+    char vote[MAX_LENGTH+1]{0};
+    std::stringstream vote_stream;
+    while(true) {
+        memset(vote, 0, MAX_LENGTH+1);
+        if ((data_read = SSL_read(ssl, vote, MAX_LENGTH+1)) <= 0) {
+            perror("SSL_read ciph");
+            exit(EXIT_FAILURE);
+        }        
+        vote_stream << vote;
+        if (data_read < MAX_LENGTH + 1) break;
     }
-    // string rv = rec_buf;
-    stringstream rv_stream;
-    rv_stream << rec_buf;
-    helib::Ctxt deserialized_vote = helib::Ctxt::readFrom(rv_stream, *public_key);
+    helib::Ctxt deserialized_vote = helib::Ctxt::readFromJSON(vote_stream, *public_key);
     return deserialized_vote;
 }
 
-bool verifyVote(helib::Ctxt &received_vote)
+bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
 {
+    helib::Ctxt one_hot_checker = received_vote; //copy constructor
+    helib::Ctxt multiple_votes_checker = received_vote;
+    helib::Ctxt valid_region_checker = received_vote;
+
+    //one hot
+    one_hot_checker -= vote_template;
+    one_hot_checker.power(p-1);
+    helib::totalSums(one_hot_checker);
+    //check if 11111
+    helib::Ptxt<helib::BGV> one_hot(*context);
+    secret_key->Decrypt(one_hot, one_hot_checker);
+    if (!verifyCheckerPtxt(one_hot)) return false;
+
+    //multiple votes
+    multiple_votes_checker -= vote_template;
+    helib::totalSums(multiple_votes_checker);
+    //check if 11111
+    helib::Ptxt<helib::BGV> multiple_votes(*context);
+    secret_key->Decrypt(multiple_votes, multiple_votes_checker);
+    if (!verifyCheckerPtxt(multiple_votes)) return false;
+
+    //valid region
+    valid_region_checker -= vote_template;
+    int nslots = context->getNSlots();
+    helib::Ptxt<helib::BGV> valid_region(*context);
+    for (int i = 0; i < num_candidates; ++i)
+        valid_region.at(i) = 1;
+    valid_region_checker *= valid_region;
+    helib::totalSums(valid_region_checker);
+    //check if 11111
+    helib::Ptxt<helib::BGV> valid_regions(*context);
+    secret_key->Decrypt(valid_regions, valid_region_checker);
+
+    return verifyCheckerPtxt(valid_regions);
+}
+
+bool verifyCheckerPtxt(helib::Ptxt<helib::BGV> ptxt) {
+    for (int i = 0 ; i < context->getNSlots(); ++i) {
+        if (ptxt.at(i) != 1) return false;
+    }
     return true;
 }
 
 int main(int argc, char *argv[])
 {
+    signal(SIGTSTP, sigStpHandler);
     /* -----------------------------------------------------------------------*/
     /* INITIALIZATION */
     /* -----------------------------------------------------------------------*/
     cout << "Registering Candidates" << endl;
     cout << "How many canidates would you like to register?" << endl;
-    int num_candidates;
     cin >> num_candidates; // TODO: buffer overflow?
     for (int i = 0; i < num_candidates; i++)
     {
@@ -312,37 +381,32 @@ int main(int argc, char *argv[])
         free(candidate_name);
     }
 
-    /* HELIB INITIALIZATION */
-    unsigned long p = 131;
-    unsigned long m = 130;
-    unsigned long r = 1;
-    unsigned long bits = 1000;
-    unsigned long c = 2;
-
     cout << "---Initialising HE Environment ... ";
 
     /* CONTEXT */
     cout << "\nInitializing the Context ... ";
-    context = new helib::Context(helib::ContextBuilder<helib::BGV>()
-                                     .m(m)
-                                     .p(p)
-                                     .r(r)
-                                     .bits(bits)
-                                     .c(c)
-                                     .build());
+    helib::Context ctxt = helib::ContextBuilder<helib::BGV>()
+                                        .m(m)
+                                        .p(p)
+                                        .r(r)
+                                        .bits(bits)
+                                        .c(c)
+                                        .build();
+    context = &ctxt;
 
     /* SECRET KEY */
     cout << "\nCreating Secret Key ...";
     // Create a secret key associated with the context
-    helib::SecKey secret_key = helib::SecKey(*context);
+    helib::SecKey sk = helib::SecKey(*context);
     // Generate the secret key
-    secret_key.GenSecKey();
+    sk.GenSecKey();
     // Compute key-switching matrices that we need
-    helib::addSome1DMatrices(secret_key);
+    helib::addSome1DMatrices(sk);
+    secret_key = &sk;
 
     /* PUBLIC KEY */
     cout << "\nCreating Public Key ...";
-    public_key = new helib::PubKey(secret_key);
+    public_key = new helib::PubKey(sk);
     // Get the EncryptedArray of the context
     const helib::EncryptedArray &ea = context->getEA();
 
@@ -368,7 +432,6 @@ int main(int argc, char *argv[])
     /* OPENING SERVER */
     /* -----------------------------------------------------------------------*/
     InitializeSSL();
-    int sock;
     int port = 8080; // TODO: change port
     if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -403,7 +466,7 @@ int main(int argc, char *argv[])
         if ((new_s = accept(sock, (struct sockaddr *)&sin, &len)) < 0)
         {
             perror("simplex-talk:accepct");
-            exit(1);
+            break;
         }
 
         pthread_t new_thread;
@@ -411,5 +474,5 @@ int main(int argc, char *argv[])
     }
     // close ballot
     ballot->close();
-    ballot->showResult(context, secret_key);
+    ballot->showResult(context, sk);
 }

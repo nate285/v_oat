@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #include <sys/socket.h>
 #include <netinet/ip.h>
@@ -17,6 +18,8 @@
 #include <openssl/x509_vfy.h>
 
 #include <helib/helib.h>
+
+#define MAX_LENGTH 16000
 
 std::vector<std::string> candidates;
 
@@ -96,9 +99,9 @@ int main(int argc, char *argv[])
     // X509_NAME_print_ex(outbio, certname, 0, 0);
 
     /* Check if connection is accepted */
-    const char *accept = "CONNECTION ACCEPTED\n"; // for user authentication
-    char receive[200];
-    if (SSL_read(ssl, receive, 200) <= 0)
+    const char accept[21] = "CONNECTION ACCEPTED\n"; // for user authentication
+    char receive[21];
+    if (SSL_read(ssl, receive, 21) <= 0)
     {
         perror("SSL_read connection accepted");
         exit(EXIT_FAILURE);
@@ -108,10 +111,10 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Not Accepted");
         close(s);
     }
-    fprintf(stdout, "%s", receive);
 
-    /* Receive Candidates */
-    fprintf(stdout, "Candidates\n");
+    std::cout << receive << std::endl; //connection accepted
+    std::cout << "Registered Candidates:" << std::endl;
+
     size_t cand_len;
     if (SSL_read(ssl, &cand_len, sizeof(size_t)) <= 0)
     {
@@ -132,98 +135,136 @@ int main(int argc, char *argv[])
         std::string candid(token);
         candidates.emplace_back(candid);
     } while (token = strtok(NULL, "&"));
-    // TODO: Print candidates function
+
+    // Print Candidates
     for (int i = 0; i < candidates.size(); ++i)
     {
-        std::cout << i << ") " << candidates[i] << std::endl;
+        std::cout << i+1 << ") " << candidates[i] << std::endl;
+    }
+
+    // send candidate success
+    const char success[27] = "CANDIDATE RECIEVE SUCCESS\n";
+    if (SSL_write(ssl, success, 27) < 0)
+    {
+        perror("send success");
+        exit(EXIT_FAILURE);
     }
 
     /* RECEIVE HELIB CONTEXT*/
-    size_t len_context;
-    if (SSL_read(ssl, &len_context, sizeof(size_t)) <= 0)
-    {
-        perror("SSL_read len context");
-        exit(EXIT_FAILURE);
-    }
-    fprintf(stdout, "Received len: %ld\n", len_context);
-    char *json_context = (char *)calloc((len_context + 1) * sizeof(char), 1);
-    if (SSL_read(ssl, json_context, (len_context + 1) * 2) <= 0)
+    char context_buf[MAX_LENGTH+1]{0};
+    if (SSL_read(ssl, context_buf, MAX_LENGTH+1) <= 0)
     {
         perror("SSL_read context");
         exit(EXIT_FAILURE);
     }
-    // fprintf(stdout, "%s", json_context);
     std::stringstream context_stream;
-    context_stream << json_context;
-    std::cerr << "\n The stream on this side is \n"
-              << json_context << "\n\n\n\n ";
-    helib::Context context = helib::Context::readFrom(context_stream);
-    free(json_context);
+    context_stream << context_buf;
+    helib::Context context = helib::Context::readFromJSON(context_stream);
 
-    std::cout << "HERE" <<std::endl;
-    /* RECEIVE HELIB PUBKEY*/
-    size_t len_pubkey;
-    if (SSL_read(ssl, &len_pubkey, sizeof(size_t)) <= 0)
+    // send context success
+    const char context_success[25] = "CONTEXT RECIEVE SUCCESS\n";
+    if (SSL_write(ssl, context_success, 25) < 0)
     {
-        perror("SSL_read len pubkey");
+        perror("send context_success");
         exit(EXIT_FAILURE);
     }
-    fprintf(stderr, "making it to 170\n\n");
-    fprintf(stdout, "Received len: %ld\n", len_pubkey);
-    char *json_pubkey = (char *)calloc(len_pubkey + 1, 1);
-    if (SSL_read(ssl, json_pubkey, len_pubkey + 1) <= 0)
-    {
-        perror("SSL_read ciph");
-        exit(EXIT_FAILURE);
-    }
-    // fprintf(stdout, "%s", json_pubkey);
+
+    char json_pubkey[MAX_LENGTH+1]{0};
+    int data_read = 0;
     std::stringstream pubkey_stream;
-    pubkey_stream << json_pubkey;
-    helib::PubKey pubkey = helib::PubKey::readFrom(pubkey_stream, context);
-    free(json_pubkey);
+    std::cout << "Reading pubkey..." << std::endl;
+    // int counter = 1;
+    while (true) {
+        // std::cout << counter++ << ": ";
+        memset(json_pubkey, 0, MAX_LENGTH+1);
+        if ((data_read = SSL_read(ssl, json_pubkey, MAX_LENGTH+1)) <= 0)
+        {
+            perror("SSL_read pubkey");
+            exit(EXIT_FAILURE);
+        }
+        pubkey_stream << json_pubkey;
+        // std::cout << data_read << std::endl;
+        if (data_read < MAX_LENGTH + 1) break;
+    }
+    std::cout << "Reading pubkey success" << std::endl;
+    helib::PubKey pubkey = helib::PubKey::readFromJSON(pubkey_stream, context);
+    // send pubkey success
+    const char* pubkey_success = "PUBKEY RECIEVE SUCCESS\n";
+    if (SSL_write(ssl, pubkey_success, strlen(pubkey_success) + 1) < 0)
+    {
+        perror("send pubkey_success");
+        exit(EXIT_FAILURE);
+    }
 
-    /* RECEIVE VOTE TEMPLATE */
-    size_t len_template;
-    if (SSL_read(ssl, &len_template, sizeof(size_t)) <= 0)
-    {
-        perror("SSL_read len ciph");
-        exit(EXIT_FAILURE);
+    //TODO: place in while loop until valid vote.
+    int vote_number;
+    std::cout << "Who would you like to vote for?" << std::endl;
+    while(true) {
+        std::cin >> vote_number; // TODO: buffer overflow?
+        if (vote_number >0 && vote_number <= candidates.size()) break;
+        std::cout << "Enter valid vote number in range: (1, " << candidates.size() << ")" << std::endl;
     }
-    fprintf(stdout, "Received len: %ld\n", len_template);
-    char *json_template = (char *)calloc(len_template + 1, 1);
-    if (SSL_read(ssl, json_template, len_template + 1) <= 0)
-    {
-        perror("SSL_read ciph");
-        exit(EXIT_FAILURE);
-    }
-    // fprintf(stdout, "%s", json_template);
+    std::cout << "You voted for candidate " << vote_number << ": " << candidates[--vote_number] << std::endl;
+
+    char json_template[MAX_LENGTH+1]{0};
     std::stringstream template_stream;
-    template_stream << json_template;
-    helib::Ctxt vote_template = helib::Ctxt::readFrom(template_stream, pubkey);
-    free(json_template);
+    std::cout << "Reading template..." << std::endl;
+    while(true) {
+        memset(json_template, 0, MAX_LENGTH+1);
+        if ((data_read = SSL_read(ssl, json_template, MAX_LENGTH+1)) <= 0) {
+            perror("SSL_read ciph");
+            exit(EXIT_FAILURE);
+        }        
+        template_stream << json_template;
+        if (data_read < MAX_LENGTH + 1) break;
+    }
+    std::cout << "Reading template success" << std::endl;
+    helib::Ctxt vote_template = helib::Ctxt::readFromJSON(template_stream, pubkey);
+    std::cout << "capacity template: " << vote_template.capacity() << std::endl;
 
+    std::cout << "Casting Vote..." << std::endl;
     int nslots = context.getNSlots();
     helib::Ptxt<helib::BGV> vote(context);
-    vote.at(1) = 1;
+    vote.at(vote_number) = 2;
 
     vote_template += vote;
+    std::cout << "Casting Vote success" << std::endl;
+    std::cout << "capacity template after vote: " << vote_template.capacity() << std::endl;
 
+    std::cout << "Seding Vote..." << std::endl;
     std::stringstream vote_stream;
     vote_template.writeToJSON(vote_stream);
-    std::string vote_string = vote_stream.str() + '\0';
+    std::string vote_string = vote_stream.str();
     const char *vote_cstr = vote_string.c_str();
-    // size_t vote_length = strlen(vote_cstr);
-    // if (SSL_write(ssl, &vote_length, sizeof(vote_length)) < 0)
-    // {
-    //     perror("send vote length");
-    //     exit(EXIT_FAILURE);
-    // }
-    if (SSL_write(ssl, vote_cstr, strlen(vote_cstr)) < 0)
+    size_t vote_length = strlen(vote_cstr);
+    int wrote = 0;
+    char vote_buf[MAX_LENGTH+1]{0};
+    while (wrote < vote_length) {
+        strncpy(vote_buf, &vote_cstr[wrote], MAX_LENGTH);
+        if (SSL_write(ssl, vote_buf, strlen(vote_buf) + 1) < 0) {
+            perror("send vote");
+            exit(EXIT_FAILURE);
+        }
+        wrote += MAX_LENGTH;
+    }
+    std::cout << "Seding Vote success" << std::endl;
+    
+    const char vote_success[25] = "Vote Valid and accepted\n"; // for user authentication
+    char vote_success_receive[25];
+    if (SSL_read(ssl, vote_success_receive, 25) <= 0)
     {
-        perror("send vote");
+        perror("SSL_read vote accepted");
         exit(EXIT_FAILURE);
     }
+    if (strcmp(vote_success, vote_success_receive) != 0)
+    {
+        fprintf(stdout, "Not Accepted\n");
+        close(s);
+    }
+    std::cout << "Vote Accepted and Casted!" << std::endl;
 
+    BIO_free_all(certbio);
+    BIO_free(outbio);
     SSL_free(ssl);
     close(s);
     X509_free(cert);

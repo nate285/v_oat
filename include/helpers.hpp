@@ -7,11 +7,13 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-void *casting_vote(void *);
-void sendCandidateInfo(SSL *ssl);
-int sendVoteTemplate(SSL *ssl, helib::Ctxt &);
-helib::Ctxt receiveVote(SSL *ssl, int);
-bool verifyVote(helib::Ctxt &);
+void *casting_vote(void*);
+void sendCandidateInfo(SSL*);
+int sendVoteTemplate(SSL*, helib::Ctxt &);
+helib::Ctxt receiveVote(SSL*, int);
+bool verifyVote(helib::Ctxt &, helib::Ctxt &);
 int sendContext(SSL*);
 int sendPubKey(SSL*);
 void showResult();
+bool verify(SSL*, const char*, int);
+bool verifyCheckerPtxt(helib::Ptxt<helib::BGV>);
