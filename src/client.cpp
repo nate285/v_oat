@@ -196,7 +196,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    //TODO: place in while loop until valid vote.
     int vote_number;
     std::cout << "Who would you like to vote for?" << std::endl;
     while(true) {
@@ -206,60 +205,60 @@ int main(int argc, char *argv[])
     }
     std::cout << "You voted for candidate " << vote_number << ": " << candidates[--vote_number] << std::endl;
 
-    char json_template[MAX_LENGTH+1]{0};
-    std::stringstream template_stream;
-    std::cout << "Reading template..." << std::endl;
     while(true) {
-        memset(json_template, 0, MAX_LENGTH+1);
-        if ((data_read = SSL_read(ssl, json_template, MAX_LENGTH+1)) <= 0) {
-            perror("SSL_read ciph");
-            exit(EXIT_FAILURE);
-        }        
-        template_stream << json_template;
-        if (data_read < MAX_LENGTH + 1) break;
-    }
-    std::cout << "Reading template success" << std::endl;
-    helib::Ctxt vote_template = helib::Ctxt::readFromJSON(template_stream, pubkey);
-    std::cout << "capacity template: " << vote_template.capacity() << std::endl;
+        char json_template[MAX_LENGTH+1]{0};
+        std::stringstream template_stream;
+        std::cout << "Reading template..." << std::endl;
+        while(true) {
+            memset(json_template, 0, MAX_LENGTH+1);
+            if ((data_read = SSL_read(ssl, json_template, MAX_LENGTH+1)) <= 0) {
+                perror("SSL_read ciph");
+                exit(EXIT_FAILURE);
+            }        
+            template_stream << json_template;
+            if (data_read < MAX_LENGTH + 1) break;
+        }
+        helib::Ctxt vote_template = helib::Ctxt::readFromJSON(template_stream, pubkey);
+        std::cout << "Reading template success" << std::endl;
+        std::cout << "getNoiseBound template: " << vote_template.getNoiseBound() << std::endl;
 
-    std::cout << "Casting Vote..." << std::endl;
-    int nslots = context.getNSlots();
-    helib::Ptxt<helib::BGV> vote(context);
-    vote.at(vote_number) = 2;
+        std::cout << "Casting Vote..." << std::endl;
+        int nslots = context.getNSlots();
+        helib::Ptxt<helib::BGV> vote(context);
+        vote.at(vote_number) = 1;
+        helib::Ctxt vote_cipher(pubkey);
+        pubkey.Encrypt(vote_cipher, vote);
 
-    vote_template += vote;
-    std::cout << "Casting Vote success" << std::endl;
-    std::cout << "capacity template after vote: " << vote_template.capacity() << std::endl;
+        vote_template += vote_cipher;
+        std::cout << "Casting Vote success" << std::endl;
+        std::cout << "getNoiseBound template after vote: " << vote_template.getNoiseBound() << std::endl;
 
-    std::cout << "Seding Vote..." << std::endl;
-    std::stringstream vote_stream;
-    vote_template.writeToJSON(vote_stream);
-    std::string vote_string = vote_stream.str();
-    const char *vote_cstr = vote_string.c_str();
-    size_t vote_length = strlen(vote_cstr);
-    int wrote = 0;
-    char vote_buf[MAX_LENGTH+1]{0};
-    while (wrote < vote_length) {
-        strncpy(vote_buf, &vote_cstr[wrote], MAX_LENGTH);
-        if (SSL_write(ssl, vote_buf, strlen(vote_buf) + 1) < 0) {
-            perror("send vote");
+        std::cout << "Seding Vote..." << std::endl;
+        std::stringstream vote_stream;
+        vote_template.writeToJSON(vote_stream);
+        std::string vote_string = vote_stream.str();
+        const char *vote_cstr = vote_string.c_str();
+        size_t vote_length = strlen(vote_cstr);
+        int wrote = 0;
+        char vote_buf[MAX_LENGTH+1]{0};
+        while (wrote < vote_length) {
+            strncpy(vote_buf, &vote_cstr[wrote], MAX_LENGTH);
+            if (SSL_write(ssl, vote_buf, strlen(vote_buf) + 1) < 0) {
+                perror("send vote");
+                exit(EXIT_FAILURE);
+            }
+            wrote += MAX_LENGTH;
+        }
+        std::cout << "Seding Vote success" << std::endl;
+        
+        const char vote_success[25] = "Vote Valid and accepted\n"; // for user authentication
+        char vote_success_receive[25];
+        if (SSL_read(ssl, vote_success_receive, 25) <= 0) {
+            perror("SSL_read vote accepted");
             exit(EXIT_FAILURE);
         }
-        wrote += MAX_LENGTH;
-    }
-    std::cout << "Seding Vote success" << std::endl;
-    
-    const char vote_success[25] = "Vote Valid and accepted\n"; // for user authentication
-    char vote_success_receive[25];
-    if (SSL_read(ssl, vote_success_receive, 25) <= 0)
-    {
-        perror("SSL_read vote accepted");
-        exit(EXIT_FAILURE);
-    }
-    if (strcmp(vote_success, vote_success_receive) != 0)
-    {
-        fprintf(stdout, "Not Accepted\n");
-        close(s);
+        if (strcmp(vote_success, vote_success_receive) == 0) break;
+        std::cout << "Not accepted. Trying again..." << std::endl;
     }
     std::cout << "Vote Accepted and Casted!" << std::endl;
 

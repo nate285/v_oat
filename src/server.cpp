@@ -193,9 +193,8 @@ void *casting_vote(void *socket_ptr)
             }
             break;
         }
-        const char *accept = "Invalid Vote. Please try again.";
-        if (SSL_write(ssl, accept, strlen(accept) + 1) < 0)
-        {
+        const char *accept = "Not accepted\n";
+        if (SSL_write(ssl, accept, strlen(accept) + 1) < 0) {
             perror("send accept");
             exit(EXIT_FAILURE);
         }
@@ -319,6 +318,12 @@ helib::Ctxt receiveVote(SSL *ssl, int length)
 
 bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
 {
+    //check for noisebound
+    //noisebound must be exactly double that of original
+    const NTL::xdouble original_noise = vote_template.getNoiseBound();
+    const NTL::xdouble received_noise = received_vote.getNoiseBound();
+    if (!(original_noise * 2 == received_noise)) return false;
+
     helib::Ctxt one_hot_checker = received_vote; //copy constructor
     helib::Ctxt multiple_votes_checker = received_vote;
     helib::Ctxt valid_region_checker = received_vote;
