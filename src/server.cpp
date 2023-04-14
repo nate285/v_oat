@@ -56,16 +56,26 @@ helib::Context *context;
 helib::PubKey *public_key;
 helib::SecKey *secret_key;
 vector<string> candidates;
+std::vector<std::pair<helib::Ctxt, helib::Ctxt>> encrypted_user_db;
 Ballot *ballot;
 int sock;
 int num_candidates;
 
 /* HELIB INITIALIZATION */
-unsigned long p = 131;
-unsigned long m = 130;
-unsigned long r = 1;
+// unsigned long p = 131;
+// unsigned long m = 130;
+// unsigned long r = 1;
+// unsigned long bits = 1000;
+// unsigned long c = 3;
+unsigned long p = 2;
+unsigned long m = 28679;
+unsigned long r = 7;
 unsigned long bits = 1000;
-unsigned long c = 2;
+unsigned long c = 3;
+unsigned long t = 64;
+std::vector<long> mvec = std::vector<long>{17, 7, 241};
+std::vector<long> gens = std::vector<long>{15184, 4098, 28204};
+std::vector<long> ords = std::vector<long>{16, 6, -10};
 
 SSL_CTX *ctx;
 const SSL_METHOD *meth;
@@ -76,7 +86,6 @@ void sigStpHandler(int signum) {
 
 void InitializeSSL()
 {
-
     signal(SIGPIPE, SIG_IGN);
 
     SSL_load_error_strings();
@@ -256,15 +265,20 @@ int sendContext(SSL *ssl) {
 
 int sendPubKey(SSL *ssl) {
     stringstream pubkey_stream;
+    std::cout << "writing pubkey to stream" << std::endl;
     public_key->writeToJSON(pubkey_stream);
+    std::cout << "converting to string" << std::endl;
     string pubkey_string = pubkey_stream.str();
+    std::cout << "converting to cstr" << std::endl;
     const char* pubkey_cstr = pubkey_string.c_str();
+    std::cout << "getting length" << std::endl;
     size_t length = pubkey_string.length();
+    std::cout << "length: " << length << std::endl;
     int wrote = 0;
     char pubkey_buf[MAX_LENGTH+1]{0};
-    // int counter = 1;
+    int counter = 1;
     while (wrote < length) {
-        // std::cout << counter++ << ": ";
+        std::cout << counter++ << ": " << wrote << std::endl;
         strncpy(pubkey_buf, &pubkey_cstr[wrote], MAX_LENGTH);
         if (SSL_write(ssl, pubkey_buf, strlen(pubkey_buf) + 1) < 0) {
             perror("send Public Key");
@@ -367,6 +381,79 @@ bool verifyCheckerPtxt(helib::Ptxt<helib::BGV> ptxt) {
     return true;
 }
 
+// Utility function to read <K,V> CSV data from file
+std::vector<std::pair<std::string, std::string>> read_csv(std::string filename)
+{
+  std::vector<std::pair<std::string, std::string>> dataset;
+  std::ifstream data_file(filename);
+
+  if (!data_file.is_open())
+    throw std::runtime_error(
+        "Error: This example failed trying to open the data file: " + filename +
+        "\n           Please check this file exists and try again.");
+
+  std::vector<std::string> row;
+  std::string line, entry, temp;
+
+  if (data_file.good()) {
+    // Read each line of file
+    while (std::getline(data_file, line)) {
+      row.clear();
+      std::stringstream ss(line);
+      while (getline(ss, entry, ',')) {
+        row.push_back(entry);
+      }
+      // Add key value pairs to dataset
+      dataset.push_back(std::make_pair(row[0], row[1]));
+    }
+  }
+
+  data_file.close();
+  return dataset;
+}
+
+void RegisterVoters(std::string db_filename) {
+    /************ Read in the database ************/
+    std::vector<std::pair<std::string, std::string>> user_db;
+    try {
+        user_db = read_csv(db_filename);
+    } catch (std::runtime_error& e) {
+        std::cerr << "\n" << e.what() << std::endl;
+        exit(1);
+    }
+
+     // Convert strings into numerical vectors
+    std::cout << "\n---Initializing the encrypted key,value pair database ("
+                << user_db.size() << " entries)...";
+    std::cout
+        << "\nConverting strings to numeric representation into Ptxt objects ..."
+        << std::endl;
+
+    // Generating the Plain text representation of User DB
+    std::vector<std::pair<helib::Ptxt<helib::BGV>, helib::Ptxt<helib::BGV>>> user_db_ptxt;
+    for (const auto& username_password_pair : user_db) {
+        helib::Ptxt<helib::BGV> username(*context);
+        for (long i = 0; i < username_password_pair.first.size(); ++i)
+            username.at(i) = username_password_pair.first[i];
+
+        helib::Ptxt<helib::BGV> password(*context);
+        for (long i = 0; i < username_password_pair.second.size(); ++i)
+            password.at(i) = username_password_pair.second[i];
+        user_db_ptxt.emplace_back(std::move(username), std::move(password));
+    }
+
+    // Encrypt the User DB
+    std::cout << "Encrypting the database..." << std::endl;
+    for (const auto& username_password_pair : user_db_ptxt) {
+        helib::Ctxt encrypted_username(*public_key);
+        helib::Ctxt encrypted_password(*public_key);
+        public_key->Encrypt(encrypted_username, username_password_pair.first);
+        public_key->Encrypt(encrypted_password, username_password_pair.second);
+        encrypted_user_db.emplace_back(std::move(encrypted_username), std::move(encrypted_password));
+    }
+    std::cout << "User Database Created" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     signal(SIGTSTP, sigStpHandler);
@@ -391,12 +478,25 @@ int main(int argc, char *argv[])
     /* CONTEXT */
     cout << "\nInitializing the Context ... ";
     helib::Context ctxt = helib::ContextBuilder<helib::BGV>()
-                                        .m(m)
-                                        .p(p)
-                                        .r(r)
-                                        .bits(bits)
-                                        .c(c)
-                                        .build();
+                                .m(m)
+                                .p(p)
+                                .r(r)
+                                .bits(bits)
+                                .c(c)
+                                .gens(gens)
+                                .ords(ords)
+                                .mvec(mvec)
+                                .bootstrappable(true)
+                                .skHwt(t)
+                                .build();
+
+    // helib::Context ctxt = helib::ContextBuilder<helib::BGV>()
+    //                            .m(m)
+    //                            .p(p)
+    //                            .r(r)
+    //                            .bits(bits)
+    //                            .c(c)
+    //                            .build();
     context = &ctxt;
 
     /* SECRET KEY */
@@ -405,8 +505,11 @@ int main(int argc, char *argv[])
     helib::SecKey sk = helib::SecKey(*context);
     // Generate the secret key
     sk.GenSecKey();
-    // Compute key-switching matrices that we need
-    helib::addSome1DMatrices(sk);
+    std::cout << "\nGenerating key-switching matrices..." << std::endl;
+    addSome1DMatrices(sk);
+    addFrbMatrices(sk);
+    // Generate bootstrapping data
+    sk.genRecryptData();
     secret_key = &sk;
 
     /* PUBLIC KEY */
@@ -432,6 +535,12 @@ int main(int argc, char *argv[])
     ballot = new Ballot{candidates, ptxt_ballot, *public_key};
 
     ballot->showCandidateInfo();
+
+    /* -----------------------------------------------------------------------*/
+    /* VOTER REGISTRATION */
+    /* -----------------------------------------------------------------------*/
+    string db_filename = "../../user_dataset.csv";
+    RegisterVoters(db_filename);
 
     /* -----------------------------------------------------------------------*/
     /* OPENING SERVER */

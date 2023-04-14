@@ -13,3 +13,40 @@ https://abcnews.go.com/WNT/story?id=239735&page=1
 - potential breaches when we connect our components
 
 MySQL DBMS, amazon MongoDB, linuxbox DSL
+
+TODO:
+1. buffer overflow checks (high)
+2. candidate registration => helib context setting (med)
+  2a. figure out optimal helib context setting according to candidate registration (low)
+  2b. security level? do we care right now? (low)
+  2c. automate helib context setting (high)
+3. voter authentification (high)
+  3a. structure? does it have to be PIR? (high)
+
+Voter Auth with potential PIR
+Server (S), Client (C)
+S has a database of E(username) : E(password) pairs
+1. S secures tls connection with C and sends Context, Pubkey
+2. C encrypts username, password, sends E(username), E(password) to S
+3. We follow PIR method to match username, multiply by password, sum
+4. Resulted sum - E(password)_user
+5. Verify if above == E(0) then authenticated
+
+NOTE: Does this matter??
+How about we have an internal server structure. 
+MAIN SERVER (MS)   # assumed to be entirely secure
+BALLOT SERVER (BS) # kinda like a database server
+CLIENT (C)
+
+Ballot Registration
+1. MS gains information about the new ballot to be created (assumed done through a secure channel)
+  1a. information include: 
+    - candidate information
+    - registered voter information
+2. MS creates BS using the information and unique port number
+
+
+
+C connects to MS
+- User authentification in MS
+- MS sends C context, public key

@@ -7,6 +7,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+void RegisterVoters(std::string);
+
 void *casting_vote(void*);
 void sendCandidateInfo(SSL*);
 int sendVoteTemplate(SSL*, helib::Ctxt &);

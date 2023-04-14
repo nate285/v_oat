@@ -173,9 +173,9 @@ int main(int argc, char *argv[])
     int data_read = 0;
     std::stringstream pubkey_stream;
     std::cout << "Reading pubkey..." << std::endl;
-    int counter = 1;
+    // int counter = 1;
     while (true) {
-        std::cout << counter++ << ": " << std::endl;
+        // std::cout << counter++ << ": ";
         memset(json_pubkey, 0, MAX_LENGTH+1);
         if ((data_read = SSL_read(ssl, json_pubkey, MAX_LENGTH+1)) <= 0)
         {
