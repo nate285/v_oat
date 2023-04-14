@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     SSL_CTX *ctx = SSL_CTX_new(method);
     if (!ctx)
     {
-        fprintf(stderr, "ctx no work\n\n");
+        fprintf(stderr, "ctx not working\n\n");
     }
 
     // Disabling SSLv2 will leaving v3 and TLSv1 for negotiation.
@@ -54,6 +54,10 @@ int main(int argc, char *argv[])
 
     // Create a new SSL session. This does not connect the socket.
     SSL *ssl = SSL_new(ctx);
+    if (argc < 2)
+    {
+        fprintf(stderr, "Please enter with correct arguments");
+    }
 
     char *host_addr = argv[1];
     int port = atoi(argv[2]);
@@ -106,13 +110,14 @@ int main(int argc, char *argv[])
         perror("SSL_read connection accepted");
         exit(EXIT_FAILURE);
     }
-    if (strcmp(accept, receive) != 0)
+    receive[20] = '\0';
+    if (strncmp(accept, receive, 21) != 0)
     {
         fprintf(stdout, "Not Accepted");
         close(s);
     }
 
-    std::cout << receive << std::endl; //connection accepted
+    std::cout << receive << std::endl; // connection accepted
     std::cout << "Registered Candidates:" << std::endl;
 
     size_t cand_len;
@@ -121,7 +126,7 @@ int main(int argc, char *argv[])
         perror("SSL_read cand_len");
         exit(EXIT_FAILURE);
     }
-    char cands[cand_len + 1] = "";
+    char cands[cand_len + 1];
     if (SSL_read(ssl, cands, cand_len + 1) <= 0)
     {
         perror("SSL_read candidates");
@@ -139,7 +144,7 @@ int main(int argc, char *argv[])
     // Print Candidates
     for (int i = 0; i < candidates.size(); ++i)
     {
-        std::cout << i+1 << ") " << candidates[i] << std::endl;
+        std::cout << i + 1 << ") " << candidates[i] << std::endl;
     }
 
     // send candidate success
@@ -151,8 +156,8 @@ int main(int argc, char *argv[])
     }
 
     /* RECEIVE HELIB CONTEXT*/
-    char context_buf[MAX_LENGTH+1]{0};
-    if (SSL_read(ssl, context_buf, MAX_LENGTH+1) <= 0)
+    char context_buf[MAX_LENGTH + 1]{0};
+    if (SSL_read(ssl, context_buf, MAX_LENGTH + 1) <= 0)
     {
         perror("SSL_read context");
         exit(EXIT_FAILURE);
@@ -169,27 +174,29 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    char json_pubkey[MAX_LENGTH+1]{0};
+    char json_pubkey[MAX_LENGTH + 1]{0};
     int data_read = 0;
     std::stringstream pubkey_stream;
     std::cout << "Reading pubkey..." << std::endl;
     int counter = 1;
-    while (true) {
+    while (true)
+    {
         std::cout << counter++ << ": " << std::endl;
-        memset(json_pubkey, 0, MAX_LENGTH+1);
-        if ((data_read = SSL_read(ssl, json_pubkey, MAX_LENGTH+1)) <= 0)
+        memset(json_pubkey, 0, MAX_LENGTH + 1);
+        if ((data_read = SSL_read(ssl, json_pubkey, MAX_LENGTH + 1)) <= 0)
         {
             perror("SSL_read pubkey");
             exit(EXIT_FAILURE);
         }
         pubkey_stream << json_pubkey;
         // std::cout << data_read << std::endl;
-        if (data_read < MAX_LENGTH + 1) break;
+        if (data_read < MAX_LENGTH + 1)
+            break;
     }
     std::cout << "Reading pubkey success" << std::endl;
     helib::PubKey pubkey = helib::PubKey::readFromJSON(pubkey_stream, context);
     // send pubkey success
-    const char* pubkey_success = "PUBKEY RECIEVE SUCCESS\n";
+    const char *pubkey_success = "PUBKEY RECIEVE SUCCESS\n";
     if (SSL_write(ssl, pubkey_success, strlen(pubkey_success) + 1) < 0)
     {
         perror("send pubkey_success");
@@ -198,25 +205,31 @@ int main(int argc, char *argv[])
 
     int vote_number;
     std::cout << "Who would you like to vote for?" << std::endl;
-    while(true) {
+    while (true)
+    {
         std::cin >> vote_number; // TODO: buffer overflow?
-        if (vote_number >0 && vote_number <= candidates.size()) break;
+        if (vote_number > 0 && vote_number <= candidates.size())
+            break;
         std::cout << "Enter valid vote number in range: (1, " << candidates.size() << ")" << std::endl;
     }
     std::cout << "You voted for candidate " << vote_number << ": " << candidates[--vote_number] << std::endl;
 
-    while(true) {
-        char json_template[MAX_LENGTH+1]{0};
+    while (true)
+    {
+        char json_template[MAX_LENGTH + 1]{0};
         std::stringstream template_stream;
         std::cout << "Reading template..." << std::endl;
-        while(true) {
-            memset(json_template, 0, MAX_LENGTH+1);
-            if ((data_read = SSL_read(ssl, json_template, MAX_LENGTH+1)) <= 0) {
+        while (true)
+        {
+            memset(json_template, 0, MAX_LENGTH + 1);
+            if ((data_read = SSL_read(ssl, json_template, MAX_LENGTH + 1)) <= 0)
+            {
                 perror("SSL_read ciph");
                 exit(EXIT_FAILURE);
-            }        
+            }
             template_stream << json_template;
-            if (data_read < MAX_LENGTH + 1) break;
+            if (data_read < MAX_LENGTH + 1)
+                break;
         }
         helib::Ctxt vote_template = helib::Ctxt::readFromJSON(template_stream, pubkey);
         std::cout << "Reading template success" << std::endl;
@@ -240,24 +253,28 @@ int main(int argc, char *argv[])
         const char *vote_cstr = vote_string.c_str();
         size_t vote_length = strlen(vote_cstr);
         int wrote = 0;
-        char vote_buf[MAX_LENGTH+1]{0};
-        while (wrote < vote_length) {
+        char vote_buf[MAX_LENGTH + 1]{0};
+        while (wrote < vote_length)
+        {
             strncpy(vote_buf, &vote_cstr[wrote], MAX_LENGTH);
-            if (SSL_write(ssl, vote_buf, strlen(vote_buf) + 1) < 0) {
+            if (SSL_write(ssl, vote_buf, strlen(vote_buf) + 1) < 0)
+            {
                 perror("send vote");
                 exit(EXIT_FAILURE);
             }
             wrote += MAX_LENGTH;
         }
         std::cout << "Seding Vote success" << std::endl;
-        
+
         const char vote_success[25] = "Vote Valid and accepted\n"; // for user authentication
         char vote_success_receive[25];
-        if (SSL_read(ssl, vote_success_receive, 25) <= 0) {
+        if (SSL_read(ssl, vote_success_receive, 25) <= 0)
+        {
             perror("SSL_read vote accepted");
             exit(EXIT_FAILURE);
         }
-        if (strcmp(vote_success, vote_success_receive) == 0) break;
+        if (strcmp(vote_success, vote_success_receive) == 0)
+            break;
         std::cout << "Not accepted. Trying again..." << std::endl;
     }
     std::cout << "Vote Accepted and Casted!" << std::endl;
