@@ -126,20 +126,21 @@ int main(int argc, char *argv[])
         perror("SSL_read cand_len");
         exit(EXIT_FAILURE);
     }
-    char cands[cand_len + 1];
+    char *cands = (char *)malloc(sizeof(char) * (cand_len + 2));
     if (SSL_read(ssl, cands, cand_len + 1) <= 0)
     {
         perror("SSL_read candidates");
         exit(EXIT_FAILURE);
     }
+    cands[cand_len + 1] = '\0';
 
     char *token;
-    token = strtok(cands, "&");
+    token = strsep(&cands, "&");
     do
     {
         std::string candid(token);
         candidates.emplace_back(candid);
-    } while (token = strtok(NULL, "&"));
+    } while (token = strsep(&cands, "&"));
 
     // Print Candidates
     for (int i = 0; i < candidates.size(); ++i)
@@ -273,7 +274,8 @@ int main(int argc, char *argv[])
             perror("SSL_read vote accepted");
             exit(EXIT_FAILURE);
         }
-        if (strcmp(vote_success, vote_success_receive) == 0)
+        vote_success_receive[24] = '\0';
+        if (strncmp(vote_success, vote_success_receive, 25) == 0)
             break;
         std::cout << "Not accepted. Trying again..." << std::endl;
     }
