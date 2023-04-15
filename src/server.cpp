@@ -60,6 +60,7 @@ int sock_maintainer;
 int maintainer_connection;
 int num_candidates;
 int num_voters;
+int num_votes = 0;
 
 /* HELIB INITIALIZATION */
 unsigned long p = 131;
@@ -76,6 +77,24 @@ void sigStpHandler(int signum)
     close(sock);
 }
 
+void sendVerify(SSL* ssl, int receive) {
+    if (SSL_write(ssl, &receive, sizeof(int)) <= 0)
+    {
+        perror("[ERROR]: SSL_write receive");
+    }
+}
+
+int receiveVerify(SSL* ssl) {
+    int receive;
+    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
+    {
+        perror("[ERROR]: SSL_read verify");
+        SSL_free(ssl);
+        return -1;
+    }
+    return receive;
+}
+
 bool verifyNonZero(helib::Ctxt ctxt) {
     ctxt.power(p-1);
     totalSums(ctxt);
@@ -84,18 +103,12 @@ bool verifyNonZero(helib::Ctxt ctxt) {
 }
 
 bool verifyUser(SSL* ssl) {
-    helib::Ctxt username = receiveVote(ssl, 0);
+    helib::Ctxt username = receiveCiphertext(ssl);
     //check if username is just E(0)
     if (!verifyNonZero(username))
         return false;
-    std::cout << "username nonzero" << std::endl;
     
-    int receive = 1;
-    if (SSL_write(ssl, &receive, sizeof(int)) <= 0)
-    {
-        perror("SSL_write receive");
-        exit(EXIT_FAILURE);
-    }
+    sendVerify(ssl, 1);
     std::vector<helib::Ctxt> duplicateCheck;
     for (auto pair : encrypted_user_db) {
         helib::Ctxt username_copy = pair.first;
@@ -108,11 +121,9 @@ bool verifyUser(SSL* ssl) {
         // at this point it is E(1) if match, or E(0) if not
         duplicateCheck.push_back(username_copy);  //for use later
     }
-    std::cout << "username comparison complete" << std::endl;
-    helib::Ctxt password = receiveVote(ssl, 0);
+    helib::Ctxt password = receiveCiphertext(ssl);
     if (!verifyNonZero(password))
         return false;
-    std::cout << "password nonzero" << std::endl;
 
     helib::Ctxt checker = duplicateCheck[0];
     checker *= encrypted_user_db[0].second;
@@ -121,7 +132,6 @@ bool verifyUser(SSL* ssl) {
         checkCopy *= encrypted_user_db[i].second;
         checker += checkCopy;
     }
-    std::cout << "password addition complete" << std::endl;
     // should be E(password) if match
     checker -= password;
     checker.addConstant(NTL::ZZX(1)); 
@@ -141,6 +151,7 @@ bool verifyUser(SSL* ssl) {
 
 void InitializeSSL()
 {
+    std::cout << "[INFO]: Initializing SSL ..." << std::endl;
     signal(SIGPIPE, SIG_IGN);
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
@@ -168,11 +179,11 @@ void InitializeSSL()
         fprintf(stderr, "Private key does not match the certificate public key\n");
         exit(5);
     }
+    std::cout << "[INFO]: SSL Initialized." << std::endl;
 }
 
-void *casting_vote(void *socket_ptr)
-{
-    int new_s = *((int *)socket_ptr);
+SSL* handleUntilUserVerification(int new_s) {
+    std::cout << "[INFO]: New voter accepted. Initializing SSL Connection ..." << std::endl;
     size_t client_len;
     SSL *ssl;
     X509 *client_cert;
@@ -191,22 +202,20 @@ void *casting_vote(void *socket_ptr)
     if (client_cert != NULL)
     {
         printf("Client certificate:\n");
-
         strr = X509_NAME_oneline(X509_get_subject_name(client_cert), 0, 0);
         CHK_NULL(strr);
         printf("\t subject: %s\n", strr);
         OPENSSL_free(strr);
-
         strr = X509_NAME_oneline(X509_get_issuer_name(client_cert), 0, 0);
         CHK_NULL(strr);
         printf("\t issuer: %s\n", strr);
         OPENSSL_free(strr);
         X509_free(client_cert);
     }
-    else
-    {
-        fprintf(stderr, "no cert\n");
-    }
+    // else
+    // {
+    //     fprintf(stderr, "no cert\n");
+    // }
 
     const char *accept = "CONNECTION ACCEPTED\n";
     if (SSL_write(ssl, accept, 21) < 0)
@@ -215,52 +224,45 @@ void *casting_vote(void *socket_ptr)
         exit(EXIT_FAILURE);
     }
     sendCandidateInfo(ssl); // send candidate names
-    int receive;
-    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
-    {
-        perror("SSL_read verify");
-        exit(EXIT_FAILURE);
-    }
-    if (receive) std::cout << "CANDIDATE SUCCESS" << std::endl;
+    int receive = receiveVerify(ssl);
+    if (receive) std::cout << "[INFO]: Candidate information sent." << std::endl;
+    else return NULL;
+
     sendContext(ssl);
-    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
-    {
-        perror("SSL_read verify");
-        exit(EXIT_FAILURE);
-    }
-    if (receive) std::cout << "CONTEXT SUCCESS" << std::endl;
+    receive = receiveVerify(ssl);
+    if (receive) std::cout << "[INFO]: Context sent." << std::endl;
+    else return NULL;
+    
     sendPubKey(ssl);
-    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
-    {
-        perror("SSL_read verify");
-        exit(EXIT_FAILURE);
-    }
-    if (receive) std::cout << "PUBKEY SUCCESS" << std::endl;
+    receive = receiveVerify(ssl);
+    if (receive) std::cout << "[INFO]: Public Key sent." << std::endl;
+    else return NULL;
 
     /* USER VERIFICATION */
     int count = 5;
+    std::cout << "[INFO]: User Verification. User has 5 tries." << std::endl;
     while (true) {
         if (!verifyUser(ssl)) {
-            int not_good = 0;
-            if (SSL_write(ssl, &not_good, sizeof(int)) <= 0)
-            {
-                perror("SSL_read verify");
-                exit(EXIT_FAILURE);
-            }
-            if (count-- == 0) {
-                pthread_exit(NULL);
+            std::cout << "[INFO]: Verification Failed. Trials left: " << --count << std::endl;
+            sendVerify(ssl, 0);
+            if (count == 0) {
+                SSL_free(ssl);
+                std::cout << "[INFO]: Verification Failed. Exiting ..." << std::endl;
+                return NULL;
             }
         } else break;
     }
-    int good = 1;
-    if (SSL_write(ssl, &good, sizeof(int)) <= 0)
-    {
-        perror("SSL_read verify");
-        exit(EXIT_FAILURE);
-    }
+    sendVerify(ssl, 1);
+    std::cout << "[INFO]: User Verified." << std::endl;
+    return ssl;
+}
 
+void *casting_vote(void *socket_ptr)
+{
+    SSL* ssl = ((SSL *)socket_ptr);
     while (true)
     {
+        std::cout << "[INFO]: Sending Vote Template ..." << std::endl;
         helib::Ptxt<helib::BGV> ptxt_vote_template(*context);
         // TODO: insert random numbers as OTP saltq
         // right now is just 0~size-1
@@ -272,17 +274,19 @@ void *casting_vote(void *socket_ptr)
         helib::Ctxt vote_template(*public_key);
         public_key->Encrypt(vote_template, ptxt_vote_template);
 
-        int len = sendVoteTemplate(ssl, vote_template);
+        int len = sendCiphertext(ssl, vote_template);
 
-        helib::Ctxt received_vote(receiveVote(ssl, len));
+        std::cout << "[INFO]: Receiving Vote back ..." << std::endl;
+        helib::Ctxt received_vote(receiveCiphertext(ssl));
+        std::cout << "[INFO]: Verifying Vote ..." << std::endl;
         if (verifyVote(received_vote, vote_template))
         {
-            cout << "CASTING...." << endl;
+            std::cout << "[INFO]: Vote Verified. Casting ..." << std::endl;
             helib::Ctxt vote(received_vote);
             vote -= vote_template; // TODO: Recrypt if needed
 
             ballot->cast(0, vote); // TODO: replace 0 with voter id
-            cout << "CASTING COMPLETE" << endl;
+            cout << "[INFO]: Casting Complete" << endl;
             const char *vote_casted = "Vote Valid and accepted\n";
             if (SSL_write(ssl, vote_casted, strnlen(vote_casted, 25)) < 0)
             {
@@ -291,6 +295,7 @@ void *casting_vote(void *socket_ptr)
             }
             break;
         }
+        std::cout << "[INFO]: Trying Again ..." << std::endl;
         const char *accept = "Not accepted\n";
         if (SSL_write(ssl, accept, strlen(accept) + 1) < 0)
         {
@@ -382,7 +387,7 @@ int sendPubKey(SSL *ssl)
     return 1;
 }
 
-int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
+int sendCiphertext(SSL *ssl, helib::Ctxt &vote_template)
 {
     stringstream vt_stream;
     vote_template.writeToJSON(vt_stream);
@@ -399,14 +404,13 @@ int sendVoteTemplate(SSL *ssl, helib::Ctxt &vote_template)
             perror("send Public Key");
             exit(EXIT_FAILURE);
         }
-        // cout << strlen(vt_buf) << endl;
         wrote += MAX_LENGTH;
     }
 
     return length;
 }
 
-helib::Ctxt receiveVote(SSL *ssl, int length)
+helib::Ctxt receiveCiphertext(SSL *ssl)
 {
     int data_read = 0;
     char *vote = (char *)malloc(MAX_LENGTH + 2);
@@ -416,8 +420,8 @@ helib::Ctxt receiveVote(SSL *ssl, int length)
         memset(vote, 0, MAX_LENGTH + 1);
         if ((data_read = SSL_read(ssl, vote, MAX_LENGTH + 1)) <= 0)
         {
-            perror("SSL_read ciph");
-            exit(EXIT_FAILURE);
+            perror("[ERROR]: SSL_read ciph");
+            exit(1);
         }
         vote[MAX_LENGTH + 1] = '\0';
         vote_stream << vote;
@@ -435,9 +439,10 @@ bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
     // noisebound must be exactly double that of original
     const NTL::xdouble original_noise = vote_template.getNoiseBound();
     const NTL::xdouble received_noise = received_vote.getNoiseBound();
-    std::cout << "noise" << std::endl;
-    if (!(original_noise * 2 == received_noise))
+    if (!(original_noise * 2 == received_noise)) {
+        std::cout << "[ERROR]: Verification Failed. Noise too big." << std::endl;
         return false;
+    }
 
     helib::Ctxt one_hot_checker = received_vote; // copy constructor
     helib::Ctxt multiple_votes_checker = received_vote;
@@ -448,15 +453,19 @@ bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
     one_hot_checker.power(p - 1);
     helib::totalSums(one_hot_checker);
     // check if 11111
-    if (!verifyChecker(one_hot_checker))
+    if (!verifyChecker(one_hot_checker)) {
+        std::cout << "[ERROR]: Verification Failed. Not one hot." << std::endl;
         return false;
+    }
 
     // multiple votes
     multiple_votes_checker -= vote_template;
     helib::totalSums(multiple_votes_checker);
     // check if 11111
-    if (!verifyChecker(multiple_votes_checker))
+    if (!verifyChecker(multiple_votes_checker)) {
+        std::cout << "[ERROR]: Verification Failed. Found Multiple Votes." << std::endl;
         return false;
+    }
 
     // valid region
     valid_region_checker -= vote_template;
@@ -467,45 +476,52 @@ bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
     valid_region_checker *= valid_region;
     helib::totalSums(valid_region_checker);
     // check if 11111
-    return verifyChecker(valid_region_checker);
+    if (!verifyChecker(valid_region_checker)) {
+        std::cout << "[ERROR]: Verification Failed. Vote not in valid region." << std::endl;
+        return false;
+    }
+    return true;
 }
 
 bool verifyChecker(helib::Ctxt& ctxt)
 {
-    int type = 0;
-    if (SSL_write(ssl_maintainer, &type, sizeof(int)) < 0)
-    {
-        perror("send type");
-        exit(EXIT_FAILURE);
-    }
-    stringstream ctxt_stream;
-    ctxt.writeToJSON(ctxt_stream);
-    string ctxt_string = ctxt_stream.str();
-    const char *ctxt_cstr = ctxt_string.c_str();
-    size_t length = ctxt_string.length();
-    int wrote = 0;
-    char vt_buf[MAX_LENGTH + 1]{0};
-    while (wrote < length)
-    {
-        strncpy(vt_buf, &ctxt_cstr[wrote], MAX_LENGTH);
-        if (SSL_write(ssl_maintainer, vt_buf, strlen(vt_buf) + 1) < 0)
-        {
-            perror("send checker");
-            exit(EXIT_FAILURE);
-        }
-        // cout << strlen(vt_buf) << endl;
-        wrote += MAX_LENGTH;
-    }
-    int check;
-    if (SSL_read(ssl_maintainer, &check, sizeof(int)) < 0)
-    {
-        perror("receive check");
-        exit(EXIT_FAILURE);
-    }
+    sendVerify(ssl_maintainer, 0);
+    sendCiphertext(ssl_maintainer, ctxt);
+    int check = receiveVerify(ssl_maintainer);
     return check == 1;
 }
 
 void handleMaintainerConnectionInit() {
+    std::cout << "[INFO]: Opening socket connection with maintainer ..." << std::endl;
+    if ((sock_maintainer = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        perror("simplex-talk: socket");
+        exit(1);
+    }
+    /* Config the server address */
+    struct sockaddr_in sin_maintainer;
+    sin_maintainer.sin_family = AF_INET;
+    sin_maintainer.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO: change inet addr
+    sin_maintainer.sin_port = htons(8081);
+    // Set all bits of the padding field to 0
+    memset(sin_maintainer.sin_zero, '\0', sizeof(sin_maintainer.sin_zero));
+
+    /* Bind the socket to the address */
+    if ((bind(sock_maintainer, (struct sockaddr *)&sin_maintainer, sizeof(sin_maintainer))) < 0)
+    {
+        perror("simplex-talk: bind");
+        exit(1);
+    }
+    listen(sock_maintainer, 1);
+
+    socklen_t len_maintainer = sizeof(sin_maintainer);
+    std::cout << "[INFO]: Listening for maintainer connections ..." << std::endl;
+    if ((maintainer_connection = accept(sock_maintainer, (struct sockaddr *)&sin_maintainer, &len_maintainer)) < 0)
+    {
+        perror("simplex-talk:accept");
+        exit(1);
+    }
+    std::cout << "[INFO]: Maintainer Connection Accepted" << std::endl;
     X509 *client_cert;
 
     ssl_maintainer = SSL_new(ctx);
@@ -539,6 +555,7 @@ void handleMaintainerConnectionInit() {
         exit(EXIT_FAILURE);
     }
 
+    std::cout << "[INFO]: Getting Ballot information and sending appropriate crypto context parameters ..." << std::endl;
     if (SSL_read(ssl_maintainer, &num_candidates, sizeof(int)) <= 0)
     {
         perror("SSL_read num_candidates");
@@ -598,38 +615,26 @@ void handleMaintainerConnectionInit() {
     }
 
     // Print Candidates
+    std::cout << "[INFO]: Got Candidates:" << std::endl;
     for (int i = 0; i < candidates.size(); ++i)
     {
         std::cout << i + 1 << ") " << candidates[i] << std::endl;
     }
-
-    int receive = 1;
-    if (SSL_write(ssl_maintainer, &receive, sizeof(int)) <= 0)
-    {
-        perror("SSL_write receive");
-        exit(EXIT_FAILURE);
-    }
+    std::cout << std::endl;
+    sendVerify(ssl_maintainer, 1);
 }
 
 void getVoterInformation() {
-    int receive = 1;
+    std::cout << "[INFO]: Receiving Voter Information ..." << std::endl;
     for (int i = 0; i < num_voters; ++i) 
     {
-        helib::Ctxt username = receiveVote(ssl_maintainer, 0);
-        if (SSL_write(ssl_maintainer, &receive, sizeof(int)) <= 0)
-        {
-            perror("SSL_write receive");
-            exit(EXIT_FAILURE);
-        }
-        helib::Ctxt password = receiveVote(ssl_maintainer, 0);
-        if (SSL_write(ssl_maintainer, &receive, sizeof(int)) <= 0)
-        {
-            perror("SSL_write receive");
-            exit(EXIT_FAILURE);
-        }
+        helib::Ctxt username = receiveCiphertext(ssl_maintainer);
+        sendVerify(ssl_maintainer, 1);
+        helib::Ctxt password = receiveCiphertext(ssl_maintainer);
+        sendVerify(ssl_maintainer, 1);
         encrypted_user_db.push_back(std::make_pair(username, password));
     }
-    std::cout << "num voters: " << encrypted_user_db.size() << std::endl;
+    std::cout << "[INFO]: Received and Saved. Number of voters: " << num_voters << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -639,38 +644,10 @@ int main(int argc, char *argv[])
     /* OPEN CONNECTION WITH MAINTAINER */
     /* -----------------------------------------------------------------------*/
     InitializeSSL();
-    if ((sock_maintainer = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        perror("simplex-talk: socket");
-        exit(1);
-    }
-    /* Config the server address */
-    struct sockaddr_in sin_maintainer;
-    sin_maintainer.sin_family = AF_INET;
-    sin_maintainer.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO: change inet addr
-    sin_maintainer.sin_port = htons(8081);
-    // Set all bits of the padding field to 0
-    memset(sin_maintainer.sin_zero, '\0', sizeof(sin_maintainer.sin_zero));
-
-    /* Bind the socket to the address */
-    if ((bind(sock_maintainer, (struct sockaddr *)&sin_maintainer, sizeof(sin_maintainer))) < 0)
-    {
-        perror("simplex-talk: bind");
-        exit(1);
-    }
-
-    // connections can be pending if many concurrent client requests
-    listen(sock_maintainer, 1); // TODO: change concurrent max
-
-    socklen_t len_maintainer = sizeof(sin_maintainer);
-    if ((maintainer_connection = accept(sock_maintainer, (struct sockaddr *)&sin_maintainer, &len_maintainer)) < 0)
-    {
-        perror("simplex-talk:accepct");
-        exit(1);
-    }
     handleMaintainerConnectionInit();
     
     /* RECEIVE CONTEXT*/
+    std::cout << "[INFO]: Receiving Crypto-Context and Public Key ..." << std::endl;
     char buffer[MAX_LENGTH + 1]{0};
     if (SSL_read(ssl_maintainer, buffer, MAX_LENGTH + 1) <= 0)
     {
@@ -680,12 +657,7 @@ int main(int argc, char *argv[])
     std::stringstream context_stream{std::string(buffer)};
     helib::Context ctxt = helib::Context::readFromJSON(context_stream);
     context = &ctxt;
-    int receive = 1;
-    if (SSL_write(ssl_maintainer, &receive, sizeof(int)) < 0)
-    {
-        perror("send receive");
-        exit(EXIT_FAILURE);
-    }
+    sendVerify(ssl_maintainer, 1);
 
     /* RECEIVE PUBLIC KEY*/
     int data_read = 0;
@@ -706,24 +678,23 @@ int main(int argc, char *argv[])
     std::cout << "Reading pubkey success" << std::endl;
     helib::PubKey pubkey = helib::PubKey::readFromJSON(pubkey_stream, ctxt);
     public_key = &pubkey;
-    if (SSL_write(ssl_maintainer, &receive, sizeof(int)) < 0)
-    {
-        perror("send receive");
-        exit(EXIT_FAILURE);
-    }
+    sendVerify(ssl_maintainer, 1);
+    std::cout << "\n***Security Level: " << ctxt.securityLevel()
+              << "\n*** Negligible for this example to improve performance time ***\n" << std::endl;
     getVoterInformation();
 
     helib::Ptxt<helib::BGV> ptxt_ballot(*context);
     /* CREATE BALLOT */
+    std::cout << "\n[INFO]: Creating Unique Ballot ..." << std::endl;
     ballot = new Ballot{candidates, ptxt_ballot, *public_key};
 
-    ballot->showCandidateInfo();
+    std::cout << "[INFO]: Initialization Complete. Ready to listen to voter clients" << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
 
     /* -----------------------------------------------------------------------*/
     /* OPENING USER SERVER */
     /* -----------------------------------------------------------------------*/
-
-    int port = 8080; // TODO: change port
+    std::cout << "\n\n[INFO]: Opening Voter Server ..." << std::endl;
     if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("simplex-talk: socket");
@@ -733,7 +704,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in sin;
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO: change inet addr
-    sin.sin_port = htons(port);
+    sin.sin_port = htons(8080); // change port
     // Set all bits of the padding field to 0
     memset(sin.sin_zero, '\0', sizeof(sin.sin_zero));
 
@@ -744,24 +715,24 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // connections can be pending if many concurrent client requests
     listen(sock, 10); // TODO: change concurrent max
-
-    int new_s;
     socklen_t len = sizeof(sin);
 
-    int vote_count = 0;
-
-    while (1) // done when we reach maximum vote count or when time limit reaches?
+    while (num_votes <= num_voters) // done when we reach maximum vote count or when time limit reaches?
     {
-        if ((new_s = accept(sock, (struct sockaddr *)&sin, &len)) < 0)
+        int* new_s = (int *)calloc(1, sizeof(int));
+        std::cout << "[INFO]: Listening for voters ..." << std::endl;
+        if ((*new_s = accept(sock, (struct sockaddr *)&sin, &len)) < 0)
         {
-            perror("simplex-talk:accepct");
+            std::cout << "[INFO]: Closing ballot signal" << std::endl;
             break;
         }
-
+        //want user verification to be serial, then vote casting parallel
+        SSL* ssl = handleUntilUserVerification(*new_s);
+        if (ssl == NULL) continue;
+        
         pthread_t new_thread;
-        pthread_create(&new_thread, NULL, casting_vote, &new_s);
+        pthread_create(&new_thread, NULL, casting_vote, (void*) ssl);
     }
     // close ballot
     ballot->close();

@@ -23,6 +23,16 @@
 
 std::vector<std::string> candidates;
 
+void printCandidates() {
+    // Print Candidates
+    std::cout << "Candidate List" << std::endl;
+    for (int i = 0; i < candidates.size(); ++i)
+    {
+        std::cout << i + 1 << ") " << candidates[i] << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     // Load algorithms and strings needed by OpenSSL
@@ -116,7 +126,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Not Accepted");
         close(s);
     }
-
+    std::cout << "[INFO]: Voter Client" << std::endl;
     std::string username;
     std::string password;
     std::cout << "Please input username: " << std::endl;
@@ -126,7 +136,6 @@ int main(int argc, char *argv[])
     std::cin.width(25);
     std::cin >> password;
 
-    std::cout << accept_receive << std::endl; // connection accepted
     std::cout << "Registered Candidates:" << std::endl;
 
     size_t cand_len;
@@ -151,11 +160,7 @@ int main(int argc, char *argv[])
         candidates.emplace_back(candid);
     } while (token = strsep(&cands, "&"));
 
-    // Print Candidates
-    for (int i = 0; i < candidates.size(); ++i)
-    {
-        std::cout << i + 1 << ") " << candidates[i] << std::endl;
-    }
+    printCandidates();
 
     // send candidate success
     int receive = 1;
@@ -184,7 +189,6 @@ int main(int argc, char *argv[])
 
     int data_read = 0;
     std::stringstream pubkey_stream;
-    std::cout << "Reading pubkey..." << std::endl;
     // int counter = 1;
     while (true)
     {
@@ -200,7 +204,6 @@ int main(int argc, char *argv[])
         if (data_read < MAX_LENGTH + 1)
             break;
     }
-    std::cout << "Reading pubkey success" << std::endl;
     helib::PubKey pubkey = helib::PubKey::readFromJSON(pubkey_stream, context);
     // send pubkey success
     if (SSL_write(ssl, &receive, sizeof(int)) < 0)
@@ -213,7 +216,7 @@ int main(int argc, char *argv[])
     int verif_count = 5;
     while (verif_count > 0) {
         if (verif_count != 5) {
-            std::cout << "Enter Username Again: " << std::endl;
+            std::cout << "\nEnter Username Again: " << std::endl;
             std::cin.width(25);
             std::cin >> username;
             std::cout << "Enter Password Again: " << std::endl;
@@ -250,7 +253,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
         if (!receive) {
-            std::cerr << "Invalid Credentials. Number of Trials left: " << --verif_count << std::endl;
+            std::cerr << "[ERROR]: Invalid Credentials. Number of Trials left: " << --verif_count << std::endl;
             continue;
         }
 
@@ -281,30 +284,39 @@ int main(int argc, char *argv[])
             perror("SSL_read verify");
             exit(EXIT_FAILURE);
         }
-        std::cout << "receive: " << receive << std::endl;
         if (!receive) {
-            std::cerr << "Invalid Credentials. Number of Trials left: " << --verif_count << std::endl;
+            std::cerr << "[ERROR]: Invalid Credentials. Number of Trials left: " << --verif_count << std::endl;
             continue;
         }
         break;
     }
+    if (verif_count == 0) {
+        std::cout << "[ERROR]: Out of trials. Please connect again." << std::endl;
+        SSL_free(ssl);
+        close(s);
+        return 0;
+    }
     std::cout << "Authenticatd!" << std::endl;
 
     int vote_number;
-    std::cout << "Who would you like to vote for?" << std::endl;
     while (true)
     {
-        std::cin >> vote_number; // TODO: buffer overflow?
-        if (vote_number > 0 && vote_number <= candidates.size())
-            break;
-        std::cout << "Enter valid vote number in range: (1, " << candidates.size() << ")" << std::endl;
-    }
-    std::cout << "You voted for candidate " << vote_number << ": " << candidates[--vote_number] << std::endl;
+        std::cout << "\n\nWho would you like to vote for? (Input -1 to show list of clients)" << std::endl;
+        while (true)
+        {
+            std::cin >> vote_number; // TODO: buffer overflow?
+            if (vote_number == -1) {
+                printCandidates();
+                continue;
+            }
+            if (vote_number > 0 && vote_number <= candidates.size())
+                break;
+            std::cout << "Enter valid vote number in range: (1, " << candidates.size() << ") or -1" << std::endl;
+        }
+        std::cout << "You voted for candidate " << vote_number << ": " << candidates[--vote_number] << std::endl;
 
-    while (true)
-    {
+    
         std::stringstream template_stream;
-        std::cout << "Reading template..." << std::endl;
         while (true)
         {
             memset(buffer, 0, MAX_LENGTH + 1);
@@ -318,10 +330,7 @@ int main(int argc, char *argv[])
                 break;
         }
         helib::Ctxt vote_template = helib::Ctxt::readFromJSON(template_stream, pubkey);
-        std::cout << "Reading template success" << std::endl;
-        std::cout << "getNoiseBound template: " << vote_template.getNoiseBound() << std::endl;
 
-        std::cout << "Casting Vote..." << std::endl;
         int nslots = context.getNSlots();
         helib::Ptxt<helib::BGV> vote(context);
         vote.at(vote_number) = 1;
@@ -329,10 +338,7 @@ int main(int argc, char *argv[])
         pubkey.Encrypt(vote_cipher, vote);
 
         vote_template += vote_cipher;
-        std::cout << "Casting Vote success" << std::endl;
-        std::cout << "getNoiseBound template after vote: " << vote_template.getNoiseBound() << std::endl;
 
-        std::cout << "Seding Vote..." << std::endl;
         std::stringstream vote_stream;
         vote_template.writeToJSON(vote_stream);
         std::string vote_string = vote_stream.str();
@@ -340,6 +346,7 @@ int main(int argc, char *argv[])
         size_t vote_length = strlen(vote_cstr);
         int wrote = 0;
         char vote_buf[MAX_LENGTH + 1]{0};
+        std::cout << "[INFO]: Sending Vote to V-Oat ..." << std::endl;
         while (wrote < vote_length)
         {
             strncpy(vote_buf, &vote_cstr[wrote], MAX_LENGTH);
@@ -350,7 +357,6 @@ int main(int argc, char *argv[])
             }
             wrote += MAX_LENGTH;
         }
-        std::cout << "Seding Vote success" << std::endl;
 
         const char vote_success[25] = "Vote Valid and accepted\n"; // for user authentication
         char vote_success_receive[25];
@@ -362,9 +368,10 @@ int main(int argc, char *argv[])
         vote_success_receive[24] = '\0';
         if (strncmp(vote_success, vote_success_receive, 25) == 0)
             break;
-        std::cout << "Not accepted. Trying again..." << std::endl;
+        std::cout << "[ERROR]: From V-Oat. Vote Verification Failed. Try Again.\n"
+                  << "If this issue Continues, please try reconnecting." << std::endl;
     }
-    std::cout << "Vote Accepted and Casted!" << std::endl;
+    std::cout << "[INFO]: From V-Oat. Vote Casted!" << std::endl;
 
     BIO_free_all(certbio);
     BIO_free(outbio);

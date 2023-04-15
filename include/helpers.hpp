@@ -11,8 +11,8 @@ void RegisterVoters(std::string);
 
 void *casting_vote(void*);
 void sendCandidateInfo(SSL*);
-int sendVoteTemplate(SSL*, helib::Ctxt &);
-helib::Ctxt receiveVote(SSL*, int);
+int sendCiphertext(SSL*, helib::Ctxt &);
+helib::Ctxt receiveCiphertext(SSL*);
 bool verifyVote(helib::Ctxt &, helib::Ctxt &);
 int sendContext(SSL*);
 int sendPubKey(SSL*);
