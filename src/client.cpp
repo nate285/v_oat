@@ -104,20 +104,29 @@ int main(int argc, char *argv[])
 
     /* Check if connection is accepted */
     const char accept[21] = "CONNECTION ACCEPTED\n"; // for user authentication
-    char receive[21];
-    if (SSL_read(ssl, receive, 21) <= 0)
+    char accept_receive[21];
+    if (SSL_read(ssl, accept_receive, 21) <= 0)
     {
         perror("SSL_read connection accepted");
         exit(EXIT_FAILURE);
     }
-    receive[20] = '\0';
-    if (strncmp(accept, receive, 21) != 0)
+    accept_receive[20] = '\0';
+    if (strncmp(accept, accept_receive, 21) != 0)
     {
         fprintf(stdout, "Not Accepted");
         close(s);
     }
 
-    std::cout << receive << std::endl; // connection accepted
+    std::string username;
+    std::string password;
+    std::cout << "Please input username: " << std::endl;
+    std::cin.width(25);
+    std::cin >> username;
+    std::cout << "Please input password: " << std::endl;
+    std::cin.width(25);
+    std::cin >> password;
+
+    std::cout << accept_receive << std::endl; // connection accepted
     std::cout << "Registered Candidates:" << std::endl;
 
     size_t cand_len;
@@ -149,47 +158,44 @@ int main(int argc, char *argv[])
     }
 
     // send candidate success
-    const char success[27] = "CANDIDATE RECIEVE SUCCESS\n";
-    if (SSL_write(ssl, success, 27) < 0)
+    int receive = 1;
+    if (SSL_write(ssl, &receive, sizeof(int)) < 0)
     {
         perror("send success");
         exit(EXIT_FAILURE);
     }
 
     /* RECEIVE HELIB CONTEXT*/
-    char context_buf[MAX_LENGTH + 1]{0};
-    if (SSL_read(ssl, context_buf, MAX_LENGTH + 1) <= 0)
+    char buffer[MAX_LENGTH + 1]{0};
+    if (SSL_read(ssl, buffer, MAX_LENGTH + 1) <= 0)
     {
         perror("SSL_read context");
         exit(EXIT_FAILURE);
     }
-    std::stringstream context_stream;
-    context_stream << context_buf;
+    std::stringstream context_stream{buffer};
     helib::Context context = helib::Context::readFromJSON(context_stream);
 
     // send context success
-    const char context_success[25] = "CONTEXT RECIEVE SUCCESS\n";
-    if (SSL_write(ssl, context_success, 25) < 0)
+    if (SSL_write(ssl, &receive, sizeof(int)) < 0)
     {
-        perror("send context_success");
+        perror("send success");
         exit(EXIT_FAILURE);
     }
 
-    char json_pubkey[MAX_LENGTH + 1]{0};
     int data_read = 0;
     std::stringstream pubkey_stream;
     std::cout << "Reading pubkey..." << std::endl;
-    int counter = 1;
+    // int counter = 1;
     while (true)
     {
-        std::cout << counter++ << ": " << std::endl;
-        memset(json_pubkey, 0, MAX_LENGTH + 1);
-        if ((data_read = SSL_read(ssl, json_pubkey, MAX_LENGTH + 1)) <= 0)
+        // std::cout << counter++ << ": " << std::endl;
+        memset(buffer, 0, MAX_LENGTH + 1);
+        if ((data_read = SSL_read(ssl, buffer, MAX_LENGTH + 1)) <= 0)
         {
             perror("SSL_read pubkey");
             exit(EXIT_FAILURE);
         }
-        pubkey_stream << json_pubkey;
+        pubkey_stream << buffer;
         // std::cout << data_read << std::endl;
         if (data_read < MAX_LENGTH + 1)
             break;
@@ -197,12 +203,92 @@ int main(int argc, char *argv[])
     std::cout << "Reading pubkey success" << std::endl;
     helib::PubKey pubkey = helib::PubKey::readFromJSON(pubkey_stream, context);
     // send pubkey success
-    const char *pubkey_success = "PUBKEY RECIEVE SUCCESS\n";
-    if (SSL_write(ssl, pubkey_success, strlen(pubkey_success) + 1) < 0)
+    if (SSL_write(ssl, &receive, sizeof(int)) < 0)
     {
-        perror("send pubkey_success");
+        perror("send success");
         exit(EXIT_FAILURE);
     }
+
+    /* USER VERIFICATION */
+    int verif_count = 5;
+    while (verif_count > 0) {
+        if (verif_count != 5) {
+            std::cout << "Enter Username Again: " << std::endl;
+            std::cin.width(25);
+            std::cin >> username;
+            std::cout << "Enter Password Again: " << std::endl;
+            std::cin.width(25);
+            std::cin >> password;
+        }
+        helib::Ptxt<helib::BGV> username_ptxt(context);
+        for (long i = 0; i < username.size(); ++i)
+            username_ptxt.at(i) = username[i];
+        helib::Ctxt encrypted_username(pubkey);
+        pubkey.Encrypt(encrypted_username, username_ptxt);
+
+        std::stringstream ctxt_stream;
+        encrypted_username.writeToJSON(ctxt_stream);
+        std::string ctxt_string = ctxt_stream.str();
+        const char *ctxt_cstr = ctxt_string.c_str();
+        size_t length = ctxt_string.length();
+        int wrote = 0;
+        char ctxt_buf[MAX_LENGTH + 1]{0};
+        while (wrote < length)
+        {
+            strncpy(ctxt_buf, &ctxt_cstr[wrote], MAX_LENGTH);
+            if (SSL_write(ssl, ctxt_buf, strlen(ctxt_buf) + 1) < 0)
+            {
+                perror("send ctxt");
+                exit(EXIT_FAILURE);
+            }
+            wrote += MAX_LENGTH;
+        }
+        int receive;
+        if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
+        {
+            perror("SSL_read verify");
+            exit(EXIT_FAILURE);
+        }
+        if (!receive) {
+            std::cerr << "Invalid Credentials. Number of Trials left: " << --verif_count << std::endl;
+            continue;
+        }
+
+        helib::Ptxt<helib::BGV> password_ptxt(context);
+        for (long i = 0; i < password.size(); ++i)
+            password_ptxt.at(i) = password[i];
+        helib::Ctxt encrypted_password(pubkey);
+        pubkey.Encrypt(encrypted_password, password_ptxt);
+
+        ctxt_stream.str(std::string());
+        encrypted_password.writeToJSON(ctxt_stream);
+        ctxt_string = ctxt_stream.str();
+        const char *pass_cstr = ctxt_string.c_str();
+        length = ctxt_string.length();
+        wrote = 0;
+        while (wrote < length)
+        {
+            strncpy(ctxt_buf, &pass_cstr[wrote], MAX_LENGTH);
+            if (SSL_write(ssl, ctxt_buf, strlen(ctxt_buf) + 1) < 0)
+            {
+                perror("send ctxt");
+                exit(EXIT_FAILURE);
+            }
+            wrote += MAX_LENGTH;
+        }
+        if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
+        {
+            perror("SSL_read verify");
+            exit(EXIT_FAILURE);
+        }
+        std::cout << "receive: " << receive << std::endl;
+        if (!receive) {
+            std::cerr << "Invalid Credentials. Number of Trials left: " << --verif_count << std::endl;
+            continue;
+        }
+        break;
+    }
+    std::cout << "Authenticatd!" << std::endl;
 
     int vote_number;
     std::cout << "Who would you like to vote for?" << std::endl;
@@ -217,18 +303,17 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        char json_template[MAX_LENGTH + 1]{0};
         std::stringstream template_stream;
         std::cout << "Reading template..." << std::endl;
         while (true)
         {
-            memset(json_template, 0, MAX_LENGTH + 1);
-            if ((data_read = SSL_read(ssl, json_template, MAX_LENGTH + 1)) <= 0)
+            memset(buffer, 0, MAX_LENGTH + 1);
+            if ((data_read = SSL_read(ssl, buffer, MAX_LENGTH + 1)) <= 0)
             {
                 perror("SSL_read ciph");
                 exit(EXIT_FAILURE);
             }
-            template_stream << json_template;
+            template_stream << buffer;
             if (data_read < MAX_LENGTH + 1)
                 break;
         }

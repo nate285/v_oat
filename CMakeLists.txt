@@ -42,13 +42,14 @@ find_package(helib "${HELIB_VERSION}" EXACT REQUIRED)
 
 # add_executable(server ./src/ballot.cpp ./src/vote.cpp ./src/platform.cpp ./src/main.cpp)
 add_executable(server ./src/server.cpp ./src/Ballot.cpp)
-
 add_executable(client ./src/client.cpp)
-
 add_executable(test ./src/helib_test.cpp)
+add_executable(maintainer ./src/maintainer.cpp)
 
 target_link_libraries(server helib ssl crypto)
 target_link_libraries(client helib ssl crypto)
 target_link_libraries(test helib)
+target_link_libraries(maintainer helib ssl crypto)
+
 
 #cmake -Dhelib_DIR=/home/hanseun/Documents/helib_install/helib_pack/share/cmake/helib ../ .

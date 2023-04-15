@@ -50,3 +50,6 @@ Ballot Registration
 C connects to MS
 - User authentification in MS
 - MS sends C context, public key
+
+Should implement better logging
+https://github.com/google/glog

@@ -31,11 +31,8 @@ using namespace std;
 #define MAX_LENGTH 16000
 
 #define HOME "./"
-
 #define CERTF HOME "cert.pem"
-
 #define KEYF HOME "key.pem"
-
 #define CHK_NULL(x)  \
     if ((x) == NULL) \
     exit(1)
@@ -54,28 +51,22 @@ using namespace std;
 
 helib::Context *context;
 helib::PubKey *public_key;
-helib::SecKey *secret_key;
 vector<string> candidates;
 std::vector<std::pair<helib::Ctxt, helib::Ctxt>> encrypted_user_db;
 Ballot *ballot;
+SSL *ssl_maintainer;
 int sock;
+int sock_maintainer;
+int maintainer_connection;
 int num_candidates;
+int num_voters;
 
 /* HELIB INITIALIZATION */
-// unsigned long p = 131;
-// unsigned long m = 130;
-// unsigned long r = 1;
-// unsigned long bits = 1000;
-// unsigned long c = 3;
-unsigned long p = 2;
-unsigned long m = 28679;
-unsigned long r = 7;
+unsigned long p = 131;
+unsigned long m = 130;
+unsigned long r = 1;
 unsigned long bits = 1000;
 unsigned long c = 3;
-unsigned long t = 64;
-std::vector<long> mvec = std::vector<long>{17, 7, 241};
-std::vector<long> gens = std::vector<long>{15184, 4098, 28204};
-std::vector<long> ords = std::vector<long>{16, 6, -10};
 
 SSL_CTX *ctx;
 const SSL_METHOD *meth;
@@ -85,10 +76,72 @@ void sigStpHandler(int signum)
     close(sock);
 }
 
+bool verifyNonZero(helib::Ctxt ctxt) {
+    ctxt.power(p-1);
+    totalSums(ctxt);
+    ctxt.power(p-1);
+    return verifyChecker(ctxt);
+}
+
+bool verifyUser(SSL* ssl) {
+    helib::Ctxt username = receiveVote(ssl, 0);
+    //check if username is just E(0)
+    if (!verifyNonZero(username))
+        return false;
+    std::cout << "username nonzero" << std::endl;
+    
+    int receive = 1;
+    if (SSL_write(ssl, &receive, sizeof(int)) <= 0)
+    {
+        perror("SSL_write receive");
+        exit(EXIT_FAILURE);
+    }
+    std::vector<helib::Ctxt> duplicateCheck;
+    for (auto pair : encrypted_user_db) {
+        helib::Ctxt username_copy = pair.first;
+        username_copy -= username;                //difference
+        username_copy.power(p-1);                 //flt
+        totalSums(username_copy);                 //totalsum
+        username_copy.power(p-1);                 //flt
+        username_copy.negate();                   //negate
+        username_copy.addConstant(NTL::ZZX(1));   //add 1
+        // at this point it is E(1) if match, or E(0) if not
+        duplicateCheck.push_back(username_copy);  //for use later
+    }
+    std::cout << "username comparison complete" << std::endl;
+    helib::Ctxt password = receiveVote(ssl, 0);
+    if (!verifyNonZero(password))
+        return false;
+    std::cout << "password nonzero" << std::endl;
+
+    helib::Ctxt checker = duplicateCheck[0];
+    checker *= encrypted_user_db[0].second;
+    for (int i = 1; i < encrypted_user_db.size(); ++i) {
+        helib::Ctxt checkCopy = duplicateCheck[i];
+        checkCopy *= encrypted_user_db[i].second;
+        checker += checkCopy;
+    }
+    std::cout << "password addition complete" << std::endl;
+    // should be E(password) if match
+    checker -= password;
+    checker.addConstant(NTL::ZZX(1)); 
+    if (verifyChecker(checker)) {
+        for (int i = 0; i < encrypted_user_db.size(); ++i) {
+            helib::Ctxt name_copy = encrypted_user_db[i].first;
+            name_copy *= duplicateCheck[i];
+            encrypted_user_db[i].first -= name_copy; //should be 0 if match or remain
+            helib::Ctxt pass_copy = encrypted_user_db[i].second;
+            pass_copy *= duplicateCheck[i];
+            encrypted_user_db[i].second -= pass_copy; //should be 0 if match or remain
+        }
+        return true;
+    }
+    return false;
+}
+
 void InitializeSSL()
 {
     signal(SIGPIPE, SIG_IGN);
-
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
     meth = TLS_server_method();
@@ -162,17 +215,49 @@ void *casting_vote(void *socket_ptr)
         exit(EXIT_FAILURE);
     }
     sendCandidateInfo(ssl); // send candidate names
-    const char candidate_success[27] = "CANDIDATE RECIEVE SUCCESS\n";
-    if (!verify(ssl, candidate_success, 27))
+    int receive;
+    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
+    {
+        perror("SSL_read verify");
         exit(EXIT_FAILURE);
+    }
+    if (receive) std::cout << "CANDIDATE SUCCESS" << std::endl;
     sendContext(ssl);
-    const char context_success[25] = "CONTEXT RECIEVE SUCCESS\n";
-    if (!verify(ssl, context_success, 25))
+    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
+    {
+        perror("SSL_read verify");
         exit(EXIT_FAILURE);
+    }
+    if (receive) std::cout << "CONTEXT SUCCESS" << std::endl;
     sendPubKey(ssl);
-    const char pubkey_success[24] = "PUBKEY RECIEVE SUCCESS\n";
-    if (!verify(ssl, pubkey_success, 24))
+    if (SSL_read(ssl, &receive, sizeof(int)) <= 0)
+    {
+        perror("SSL_read verify");
         exit(EXIT_FAILURE);
+    }
+    if (receive) std::cout << "PUBKEY SUCCESS" << std::endl;
+
+    /* USER VERIFICATION */
+    int count = 5;
+    while (true) {
+        if (!verifyUser(ssl)) {
+            int not_good = 0;
+            if (SSL_write(ssl, &not_good, sizeof(int)) <= 0)
+            {
+                perror("SSL_read verify");
+                exit(EXIT_FAILURE);
+            }
+            if (count-- == 0) {
+                pthread_exit(NULL);
+            }
+        } else break;
+    }
+    int good = 1;
+    if (SSL_write(ssl, &good, sizeof(int)) <= 0)
+    {
+        perror("SSL_read verify");
+        exit(EXIT_FAILURE);
+    }
 
     while (true)
     {
@@ -275,21 +360,16 @@ int sendContext(SSL *ssl)
 int sendPubKey(SSL *ssl)
 {
     stringstream pubkey_stream;
-    std::cout << "writing pubkey to stream" << std::endl;
     public_key->writeToJSON(pubkey_stream);
-    std::cout << "converting to string" << std::endl;
     string pubkey_string = pubkey_stream.str();
-    std::cout << "converting to cstr" << std::endl;
     const char *pubkey_cstr = pubkey_string.c_str();
-    std::cout << "getting length" << std::endl;
     size_t length = pubkey_string.length();
-    std::cout << "length: " << length << std::endl;
     int wrote = 0;
     char pubkey_buf[MAX_LENGTH + 1]{0};
-    int counter = 1;
+    // int counter = 1;
     while (wrote < length)
     {
-        std::cout << counter++ << ": " << wrote << std::endl;
+        // std::cout << counter++ << ": " << wrote << std::endl;
         strncpy(pubkey_buf, &pubkey_cstr[wrote], MAX_LENGTH);
         if (SSL_write(ssl, pubkey_buf, strlen(pubkey_buf) + 1) < 0)
         {
@@ -355,6 +435,7 @@ bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
     // noisebound must be exactly double that of original
     const NTL::xdouble original_noise = vote_template.getNoiseBound();
     const NTL::xdouble received_noise = received_vote.getNoiseBound();
+    std::cout << "noise" << std::endl;
     if (!(original_noise * 2 == received_noise))
         return false;
 
@@ -367,18 +448,14 @@ bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
     one_hot_checker.power(p - 1);
     helib::totalSums(one_hot_checker);
     // check if 11111
-    helib::Ptxt<helib::BGV> one_hot(*context);
-    secret_key->Decrypt(one_hot, one_hot_checker);
-    if (!verifyCheckerPtxt(one_hot))
+    if (!verifyChecker(one_hot_checker))
         return false;
 
     // multiple votes
     multiple_votes_checker -= vote_template;
     helib::totalSums(multiple_votes_checker);
     // check if 11111
-    helib::Ptxt<helib::BGV> multiple_votes(*context);
-    secret_key->Decrypt(multiple_votes, multiple_votes_checker);
-    if (!verifyCheckerPtxt(multiple_votes))
+    if (!verifyChecker(multiple_votes_checker))
         return false;
 
     // valid region
@@ -390,180 +467,251 @@ bool verifyVote(helib::Ctxt &received_vote, helib::Ctxt &vote_template)
     valid_region_checker *= valid_region;
     helib::totalSums(valid_region_checker);
     // check if 11111
-    helib::Ptxt<helib::BGV> valid_regions(*context);
-    secret_key->Decrypt(valid_regions, valid_region_checker);
-
-    return verifyCheckerPtxt(valid_regions);
+    return verifyChecker(valid_region_checker);
 }
 
-bool verifyCheckerPtxt(helib::Ptxt<helib::BGV> ptxt)
+bool verifyChecker(helib::Ctxt& ctxt)
 {
-    for (int i = 0; i < context->getNSlots(); ++i)
+    int type = 0;
+    if (SSL_write(ssl_maintainer, &type, sizeof(int)) < 0)
     {
-        if (ptxt.at(i) != 1)
-            return false;
+        perror("send type");
+        exit(EXIT_FAILURE);
     }
-    return true;
-}
-
-// Utility function to read <K,V> CSV data from file
-std::vector<std::pair<std::string, std::string>> read_csv(std::string filename)
-{
-    std::vector<std::pair<std::string, std::string>> dataset;
-    std::ifstream data_file(filename);
-
-    if (!data_file.is_open())
-        throw std::runtime_error(
-            "Error: This example failed trying to open the data file: " + filename +
-            "\n           Please check this file exists and try again.");
-
-    std::vector<std::string> row;
-    std::string line, entry, temp;
-
-    if (data_file.good())
+    stringstream ctxt_stream;
+    ctxt.writeToJSON(ctxt_stream);
+    string ctxt_string = ctxt_stream.str();
+    const char *ctxt_cstr = ctxt_string.c_str();
+    size_t length = ctxt_string.length();
+    int wrote = 0;
+    char vt_buf[MAX_LENGTH + 1]{0};
+    while (wrote < length)
     {
-        // Read each line of file
-        while (std::getline(data_file, line))
+        strncpy(vt_buf, &ctxt_cstr[wrote], MAX_LENGTH);
+        if (SSL_write(ssl_maintainer, vt_buf, strlen(vt_buf) + 1) < 0)
         {
-            row.clear();
-            std::stringstream ss(line);
-            while (getline(ss, entry, ','))
-            {
-                row.push_back(entry);
-            }
-            // Add key value pairs to dataset
-            dataset.push_back(std::make_pair(row[0], row[1]));
+            perror("send checker");
+            exit(EXIT_FAILURE);
         }
+        // cout << strlen(vt_buf) << endl;
+        wrote += MAX_LENGTH;
     }
-
-    data_file.close();
-    return dataset;
+    int check;
+    if (SSL_read(ssl_maintainer, &check, sizeof(int)) < 0)
+    {
+        perror("receive check");
+        exit(EXIT_FAILURE);
+    }
+    return check == 1;
 }
 
-void RegisterVoters(std::string db_filename)
-{
-    /************ Read in the database ************/
-    std::vector<std::pair<std::string, std::string>> user_db;
-    try
+void handleMaintainerConnectionInit() {
+    X509 *client_cert;
+
+    ssl_maintainer = SSL_new(ctx);
+    SSL_use_certificate_file(ssl_maintainer, "cert.pem", SSL_FILETYPE_PEM);
+    SSL_use_PrivateKey_file(ssl_maintainer, "key.pem", SSL_FILETYPE_PEM);
+    SSL_set_fd(ssl_maintainer, maintainer_connection);
+    SSL_accept(ssl_maintainer);
+    client_cert = SSL_get_peer_certificate(ssl_maintainer);
+    char *strr;
+    if (client_cert != NULL)
     {
-        user_db = read_csv(db_filename);
+        printf("Client certificate:\n");
+        strr = X509_NAME_oneline(X509_get_subject_name(client_cert), 0, 0);
+        CHK_NULL(strr);
+        printf("\t subject: %s\n", strr);
+        OPENSSL_free(strr);
+        strr = X509_NAME_oneline(X509_get_issuer_name(client_cert), 0, 0);
+        CHK_NULL(strr);
+        printf("\t issuer: %s\n", strr);
+        OPENSSL_free(strr);
+        X509_free(client_cert);
     }
-    catch (std::runtime_error &e)
+    else
     {
-        std::cerr << "\n"
-                  << e.what() << std::endl;
-        exit(1);
+        fprintf(stderr, "no cert\n");
     }
-
-    // Convert strings into numerical vectors
-    std::cout << "\n---Initializing the encrypted key,value pair database ("
-              << user_db.size() << " entries)...";
-    std::cout
-        << "\nConverting strings to numeric representation into Ptxt objects ..."
-        << std::endl;
-
-    // Generating the Plain text representation of User DB
-    std::vector<std::pair<helib::Ptxt<helib::BGV>, helib::Ptxt<helib::BGV>>> user_db_ptxt;
-    for (const auto &username_password_pair : user_db)
+    const char *accept = "CONNECTION ACCEPTED\n";
+    if (SSL_write(ssl_maintainer, accept, 21) < 0)
     {
-        helib::Ptxt<helib::BGV> username(*context);
-        for (long i = 0; i < username_password_pair.first.size(); ++i)
-            username.at(i) = username_password_pair.first[i];
-
-        helib::Ptxt<helib::BGV> password(*context);
-        for (long i = 0; i < username_password_pair.second.size(); ++i)
-            password.at(i) = username_password_pair.second[i];
-        user_db_ptxt.emplace_back(std::move(username), std::move(password));
+        perror("send accept");
+        exit(EXIT_FAILURE);
     }
 
-    // Encrypt the User DB
-    std::cout << "Encrypting the database..." << std::endl;
-    for (const auto &username_password_pair : user_db_ptxt)
+    if (SSL_read(ssl_maintainer, &num_candidates, sizeof(int)) <= 0)
     {
-        helib::Ctxt encrypted_username(*public_key);
-        helib::Ctxt encrypted_password(*public_key);
-        public_key->Encrypt(encrypted_username, username_password_pair.first);
-        public_key->Encrypt(encrypted_password, username_password_pair.second);
-        encrypted_user_db.emplace_back(std::move(encrypted_username), std::move(encrypted_password));
+        perror("SSL_read num_candidates");
+        exit(EXIT_FAILURE);
     }
-    std::cout << "User Database Created" << std::endl;
+    
+    if (SSL_read(ssl_maintainer, &num_voters, sizeof(int)) <= 0)
+    {
+        perror("SSL_read num_voters");
+        exit(EXIT_FAILURE);
+    }
+
+    
+    if (SSL_write(ssl_maintainer, &p, sizeof(unsigned long)) < 0)
+    {
+        perror("send p");
+        exit(EXIT_FAILURE);
+    }
+    if (SSL_write(ssl_maintainer, &m, sizeof(unsigned long)) < 0)
+    {
+        perror("send m");
+        exit(EXIT_FAILURE);
+    }
+    if (SSL_write(ssl_maintainer, &r, sizeof(unsigned long)) < 0)
+    {
+        perror("send r");
+        exit(EXIT_FAILURE);
+    }
+    if (SSL_write(ssl_maintainer, &bits, sizeof(unsigned long)) < 0)
+    {
+        perror("send bits");
+        exit(EXIT_FAILURE);
+    }
+    if (SSL_write(ssl_maintainer, &c, sizeof(unsigned long)) < 0)
+    {
+        perror("send c");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t cand_len;
+    if (SSL_read(ssl_maintainer, &cand_len, sizeof(size_t)) <= 0)
+    {
+        perror("SSL_read cand_len");
+        exit(EXIT_FAILURE);
+    }
+    char *cands = (char *)malloc(sizeof(char) * (cand_len + 2));
+    if (SSL_read(ssl_maintainer, cands, cand_len + 1) <= 0)
+    {
+        perror("SSL_read candidates");
+        exit(EXIT_FAILURE);
+    }
+    cands[cand_len + 1] = '\0';
+    stringstream cand_ss{std::string{cands}};
+    string candidate;
+    while(std::getline(cand_ss, candidate, '&')) {
+        candidates.push_back(candidate);
+    }
+
+    // Print Candidates
+    for (int i = 0; i < candidates.size(); ++i)
+    {
+        std::cout << i + 1 << ") " << candidates[i] << std::endl;
+    }
+
+    int receive = 1;
+    if (SSL_write(ssl_maintainer, &receive, sizeof(int)) <= 0)
+    {
+        perror("SSL_write receive");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void getVoterInformation() {
+    int receive = 1;
+    for (int i = 0; i < num_voters; ++i) 
+    {
+        helib::Ctxt username = receiveVote(ssl_maintainer, 0);
+        if (SSL_write(ssl_maintainer, &receive, sizeof(int)) <= 0)
+        {
+            perror("SSL_write receive");
+            exit(EXIT_FAILURE);
+        }
+        helib::Ctxt password = receiveVote(ssl_maintainer, 0);
+        if (SSL_write(ssl_maintainer, &receive, sizeof(int)) <= 0)
+        {
+            perror("SSL_write receive");
+            exit(EXIT_FAILURE);
+        }
+        encrypted_user_db.push_back(std::make_pair(username, password));
+    }
+    std::cout << "num voters: " << encrypted_user_db.size() << std::endl;
 }
 
 int main(int argc, char *argv[])
 {
     signal(SIGTSTP, sigStpHandler);
     /* -----------------------------------------------------------------------*/
-    /* INITIALIZATION */
+    /* OPEN CONNECTION WITH MAINTAINER */
     /* -----------------------------------------------------------------------*/
-    cout << "Registering Candidates" << endl;
-    cout << "How many canidates would you like to register?" << endl;
-    cin >> num_candidates; // TODO: buffer overflow?
-    for (int i = 0; i < num_candidates; i++)
+    InitializeSSL();
+    if ((sock_maintainer = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
-        char *candidate_name = (char *)malloc(sizeof(char) * 100);
-        cout << "Registering candidate " << i + 1 << endl;
-        cout << "Enter name " << endl;
-        cin >> candidate_name; // TODO: buffer overflow?
-        candidates.emplace_back(candidate_name);
-        free(candidate_name);
+        perror("simplex-talk: socket");
+        exit(1);
+    }
+    /* Config the server address */
+    struct sockaddr_in sin_maintainer;
+    sin_maintainer.sin_family = AF_INET;
+    sin_maintainer.sin_addr.s_addr = inet_addr("127.0.0.1"); // TODO: change inet addr
+    sin_maintainer.sin_port = htons(8081);
+    // Set all bits of the padding field to 0
+    memset(sin_maintainer.sin_zero, '\0', sizeof(sin_maintainer.sin_zero));
+
+    /* Bind the socket to the address */
+    if ((bind(sock_maintainer, (struct sockaddr *)&sin_maintainer, sizeof(sin_maintainer))) < 0)
+    {
+        perror("simplex-talk: bind");
+        exit(1);
     }
 
-    cout << "---Initialising HE Environment ... ";
+    // connections can be pending if many concurrent client requests
+    listen(sock_maintainer, 1); // TODO: change concurrent max
 
-    /* CONTEXT */
-    cout << "\nInitializing the Context ... ";
-    helib::Context ctxt = helib::ContextBuilder<helib::BGV>()
-                              .m(m)
-                              .p(p)
-                              .r(r)
-                              .bits(bits)
-                              .c(c)
-                              .gens(gens)
-                              .ords(ords)
-                              .mvec(mvec)
-                              .bootstrappable(true)
-                              .skHwt(t)
-                              .build();
-
-    // helib::Context ctxt = helib::ContextBuilder<helib::BGV>()
-    //                            .m(m)
-    //                            .p(p)
-    //                            .r(r)
-    //                            .bits(bits)
-    //                            .c(c)
-    //                            .build();
+    socklen_t len_maintainer = sizeof(sin_maintainer);
+    if ((maintainer_connection = accept(sock_maintainer, (struct sockaddr *)&sin_maintainer, &len_maintainer)) < 0)
+    {
+        perror("simplex-talk:accepct");
+        exit(1);
+    }
+    handleMaintainerConnectionInit();
+    
+    /* RECEIVE CONTEXT*/
+    char buffer[MAX_LENGTH + 1]{0};
+    if (SSL_read(ssl_maintainer, buffer, MAX_LENGTH + 1) <= 0)
+    {
+        perror("SSL_read context");
+        exit(EXIT_FAILURE);
+    }
+    std::stringstream context_stream{std::string(buffer)};
+    helib::Context ctxt = helib::Context::readFromJSON(context_stream);
     context = &ctxt;
+    int receive = 1;
+    if (SSL_write(ssl_maintainer, &receive, sizeof(int)) < 0)
+    {
+        perror("send receive");
+        exit(EXIT_FAILURE);
+    }
 
-    /* SECRET KEY */
-    cout << "\nCreating Secret Key ...";
-    // Create a secret key associated with the context
-    helib::SecKey sk = helib::SecKey(*context);
-    // Generate the secret key
-    sk.GenSecKey();
-    std::cout << "\nGenerating key-switching matrices..." << std::endl;
-    addSome1DMatrices(sk);
-    addFrbMatrices(sk);
-    // Generate bootstrapping data
-    sk.genRecryptData();
-    secret_key = &sk;
-
-    /* PUBLIC KEY */
-    cout << "\nCreating Public Key ...";
-    public_key = new helib::PubKey(sk);
-    // Get the EncryptedArray of the context
-    const helib::EncryptedArray &ea = context->getEA();
-
-    // Print the security level
-    // Note: This will be negligible to improve performance time.
-    cout << "\n***Security Level: " << context->securityLevel()
-         << " *** Negligible for this example ***" << endl;
-
-    // Get the number of slot (phi(m))
-    long nslots = ea.size();
-    cout << "\nNumber of slots: " << nslots << endl;
-
-    cout << "\nInitialization Completed" << endl;
-    cout << "--------------------------" << endl;
+    /* RECEIVE PUBLIC KEY*/
+    int data_read = 0;
+    std::stringstream pubkey_stream;
+    std::cout << "Reading pubkey..." << std::endl;
+    while (true)
+    {
+        memset(buffer, 0, MAX_LENGTH + 1);
+        if ((data_read = SSL_read(ssl_maintainer, buffer, MAX_LENGTH + 1)) <= 0)
+        {
+            perror("SSL_read pubkey");
+            exit(EXIT_FAILURE);
+        }
+        pubkey_stream << buffer;
+        if (data_read < MAX_LENGTH + 1)
+            break;
+    }
+    std::cout << "Reading pubkey success" << std::endl;
+    helib::PubKey pubkey = helib::PubKey::readFromJSON(pubkey_stream, ctxt);
+    public_key = &pubkey;
+    if (SSL_write(ssl_maintainer, &receive, sizeof(int)) < 0)
+    {
+        perror("send receive");
+        exit(EXIT_FAILURE);
+    }
+    getVoterInformation();
 
     helib::Ptxt<helib::BGV> ptxt_ballot(*context);
     /* CREATE BALLOT */
@@ -572,15 +720,9 @@ int main(int argc, char *argv[])
     ballot->showCandidateInfo();
 
     /* -----------------------------------------------------------------------*/
-    /* VOTER REGISTRATION */
+    /* OPENING USER SERVER */
     /* -----------------------------------------------------------------------*/
-    string db_filename = "../../user_dataset.csv";
-    RegisterVoters(db_filename);
 
-    /* -----------------------------------------------------------------------*/
-    /* OPENING SERVER */
-    /* -----------------------------------------------------------------------*/
-    InitializeSSL();
     int port = 8080; // TODO: change port
     if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -623,5 +765,5 @@ int main(int argc, char *argv[])
     }
     // close ballot
     ballot->close();
-    ballot->showResult(context, sk);
+    ballot->showResult(context, ssl_maintainer);
 }

@@ -7,6 +7,14 @@
 #include <unordered_set>
 #include <optional>
 
+
+#include <openssl/rsa.h>
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #define Ballot_INIT 0
 #define Ballot_OPEN 1
 #define Ballot_CLOSED 2
@@ -43,7 +51,7 @@ public:
     // helib::Ctxt create_vote_template();
     // helib::PubKey getPubKey();
 
-    void showResult(helib::Context*, helib::SecKey); // display results
+    void showResult(helib::Context*, SSL*); // display results
 };
 
 #endif

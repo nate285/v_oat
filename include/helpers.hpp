@@ -18,4 +18,4 @@ int sendContext(SSL*);
 int sendPubKey(SSL*);
 void showResult();
 bool verify(SSL*, const char*, int);
-bool verifyCheckerPtxt(helib::Ptxt<helib::BGV>);
+bool verifyChecker(helib::Ctxt&);
