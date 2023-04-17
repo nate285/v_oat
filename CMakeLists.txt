@@ -36,6 +36,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
 # string(REGEX REPLACE "\n$" "" HELIB_VERSION "${HELIB_VERSION}")
 file(STRINGS "../HElib/VERSION" HELIB_VERSION)
 
+# Adding some buffer overflow protection
+
+add_compile_options("-fstack-protector")
+
 include_directories(./include) 
 
 find_package(helib "${HELIB_VERSION}" EXACT REQUIRED)
